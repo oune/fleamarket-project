@@ -2,7 +2,7 @@
   <v-app>
     <pcMenuBar />
     <v-main>
-      <showDetail />
+      <showDetailAdmin />
       <!-- <HelloWorld /> -->
     </v-main>
   </v-app>
@@ -11,7 +11,7 @@
 <script>
 // import HelloWorld from "./components/HelloWorld";
 import pcMenuBar from "@/components/pcMenuBar";
-import showDetail from "@/views/showDetail";
+import showDetailAdmin from "@/views/showDetailAdmin";
 
 export default {
   name: "App",
@@ -19,7 +19,7 @@ export default {
   components: {
     // HelloWorld,
     pcMenuBar,
-    showDetail,
+    showDetailAdmin,
   },
 
   data: () => ({
