@@ -1,6 +1,7 @@
 <template>
   <v-container>
     <!-- 책이름, 저자,출판사, 검색 -->
+    <!-- 현재 로딩 화면 X -->
     <v-row>
       <v-col cols="12">
         <v-card class="cover">
@@ -171,12 +172,14 @@
           >
             <template v-slot:top>
               <v-toolbar flat>
-                <v-toolbar-title></v-toolbar-title>
+                <v-toolbar-title>예약자 명단</v-toolbar-title>
                 <v-divider class="mx-4" inset vertical></v-divider>
+                <v-toolbar-title
+                  >{{ curUserNum }}/{{ totalUserNum }}</v-toolbar-title
+                >
                 <v-spacer></v-spacer>
 
-                <!-- 삭제(본인만 가능하도록) -->
-                <!-- 삭제시 학번, 비밀번호 요구. 선택된 예약과 학번, 비밀번호가 맞으면 예약 삭제 -->
+                <!-- 삭제 -->
                 <v-dialog v-model="dialogDelete" max-width="500px">
                   <v-card>
                     <v-container>
@@ -223,10 +226,15 @@ export default {
       searchUsers: "",
 
       //현재 페이지의 책 아이디값.
-      bookId: "",
+      bookId: "ssDI5FcuSi2m09teFn5G",
 
       // 총 등록 책 수
       bookNum: "",
+
+      //현재 예약자 수
+      curUserNum: "",
+      //총 예약 가능한 수
+      totalUserNum: "",
 
       bookHeaders: [
         {
@@ -248,7 +256,7 @@ export default {
           sortable: true,
           value: "name",
         },
-        { text: "학번", value: "studentNum" },
+        { text: "학번", value: "studentId" },
         { text: "날짜", value: "day" },
         { text: "시간", value: "time" },
         { text: "삭제", value: "actions", sortable: false },
@@ -259,13 +267,12 @@ export default {
 
       //   예약자 목록 배열
       users: [],
+
       test: "가나다라",
 
-      //예약 기능 관련
-      date: "",
       dialog: false,
       dialogDelete: false,
-      editedIndex: -1,
+      editedBookIndex: -1,
       editedBookItem: {
         name: "",
         studentId: "",
@@ -304,11 +311,11 @@ export default {
     },
   },
 
-  // api 연결
   beforeMount() {
-    this.getBookList();
+    // this.getBookList();
   },
 
+  // api 연결
   //테이블 초기화.
   created() {
     this.initialize();
@@ -348,18 +355,21 @@ export default {
     아래가 사용 예시.
     
     */
-    getBookList() {
-      //재고 목록 조회
-      //상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 apu에 던져줘야 함.
-      this.axios
+
+    //재고 목록 조회
+    //초기화 함수(재고, 예약)
+    //현재 등록되어 있는 책의 수(totalUserNum), 책 정보를 가져와서 재고 테이블에 초기화.
+    async getBookList() {
+      //상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 api에 던져줘야 함.
+      await this.axios
         .get(
-          "https://us-central1-kit-fleamarket.cloudfunctions.net/books/ssDI5FcuSi2m09teFn5G/stocks"
+          `https://us-central1-kit-fleamarket.cloudfunctions.net/books/${this.bookId}/stocks`
         )
         .then((res) => {
           console.log(res);
           //   console.log(res.data);
+          this.totalUserNum = res.data.length;
           this.books = res.data;
-          this.bookId = "ssDI5FcuSi2m09teFn5G";
           //   console.log(books);
           //   console.log(res.data.length);
         })
@@ -368,37 +378,43 @@ export default {
         });
     },
 
-    //테이블 아이템 설정(재고목록, 예약목록)
+    //예약 목록 조회
+
+    //현재 예약자 수(curUserNum), 예약자 총 명단을 가져와서 예약자 명단 테이블에 초기화.
+    async getUserList() {
+      await this.axios
+        .get(
+          `https://us-central1-kit-fleamarket.cloudfunctions.net/books/${this.bookId}/reservations`
+        )
+        .then((res) => {
+          this.curUserNum = res.data.length;
+          this.users = res.data;
+          console.log(res.data[0].time);
+          console.log(res.data[0].time.slice(5, 7)); //월
+          console.log(res.data[0].time.slice(8, 10)); //일
+          console.log(res.data[0].time.slice(11, 13)); //시간
+          this.users =
+          //   console.log(res.data);
+          //   this.users = res.data;
+          //   console.log(books);
+          //   console.log(res.data.length);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+
+    //각 함수 호출, 초기화
+    //created 에서 수행.
     initialize() {
+      // 재고 목록 초기화
       this.getBookList();
 
-      this.users = [
-        {
-          name: "김도현1",
-          studentNum: 20160140,
-          day: "03/01",
-          time: "오후 3시",
-        },
-        {
-          name: "김도현2",
-          studentNum: 20160141,
-          day: "03/07",
-          time: "오후 8시",
-        },
-        {
-          name: "김도현3",
-          studentNum: 20160142,
-          day: "03/04",
-          time: "오후6시",
-        },
-        {
-          name: "김도현4",
-          studentNum: 20160143,
-          day: "03/08",
-          time: "오후 2시",
-        },
-      ];
+      // 예약 목록 초기화
+      this.getUserList();
     },
+
+    //-----초기화 함수 끝-----
 
     //사용자 에약 목록관련
     //기존 예약 조회, 삭제기능.
@@ -447,7 +463,6 @@ export default {
     //재고 추가
     addBooksList(item) {
       console.log("데이터");
-      console.log(item);
       let body = {
         name: item.name,
         studentId: item.studentId,
@@ -474,7 +489,6 @@ export default {
     //재고 수정
     modiBooksList(item) {
       console.log("modiBookList");
-      console.log(item);
       let body = {
         name: item.name,
         studentId: item.studentId,
