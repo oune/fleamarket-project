@@ -3,38 +3,25 @@
     <form class = 'form-field'>
     <v-text-field
       v-model="name"
-      :error-messages="nameErrors"
       label="이름"
       required
-      @input="$v.name.$touch()"
-      @blur="$v.name.$touch()"
     ></v-text-field>
     <v-text-field
-      v-model="email"
-      :error-messages="emailErrors"
+      v-model="publisher"
       label="출판사"
       required
-      @input="$v.email.$touch()"
-      @blur="$v.email.$touch()"
     ></v-text-field>
     <v-text-field
-      v-model="select"
-      :items="items"
-      :error-messages="selectErrors"
+      v-model="author"
       label="저자"
       required
-      @change="$v.select.$touch()"
-      @blur="$v.select.$touch()"
     ></v-text-field>
     <div class = 'button-field'>
     <v-btn
       class="mr-4"
       @click="submit"
     >
-      submit
-    </v-btn>
-    <v-btn @click="clear">
-      clear
+      글쓰기
     </v-btn>
     </div>
   </form>
@@ -42,17 +29,27 @@
 </template>
 
 <script>
+import Data from '../Data/enroll'
 export default {
+  data() {
+    return {
+      data:Data,
+      name:"",
+      publisher:"",
+      author:"",
+    }
+  },
     methods: {
       submit () {
-        this.$v.$touch()
-      },
-      clear () {
-        this.$v.$reset()
-        this.name = ''
-        this.email = ''
-        this.select = null
-        this.checkbox = false
+        this.data.push({
+          name: this.name,
+          publisher: this.publisher,
+          author: this.author,
+        })
+        this.$router.push({
+          path:"./Manager"
+        })
+        alert(this.autor);
       },
     },
 }

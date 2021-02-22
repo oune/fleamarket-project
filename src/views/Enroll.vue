@@ -1,7 +1,7 @@
 <template>
     <div class = 'listContainer'>
         <div class="text-center">
-    <v-btn rounded color="primary" dark ><a href="/bookenroll">책 등록하기 </a></v-btn>
+    <v-btn rounded color="primary" dark @click="GoToEnroll">책 등록하기</v-btn>
   </div>
         <br>
         <bookList />
@@ -16,6 +16,18 @@ import bookList from '../components/enroll/bookList';
 export default {
     components : {
         bookList,
+    },
+    data() {
+        return{
+            
+        }
+    },
+    methods: {
+        GoToEnroll() {
+            this.$router.push({
+                path:'./bookEnroll'
+            })
+        }
     }
 }
 </script>
