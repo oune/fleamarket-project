@@ -2,8 +2,8 @@
     <div class = 'wrap'>
     <form class = 'form-field'>
     <v-text-field
-      v-model="name"
-      label="이름"
+      v-model="title"
+      label="책 제목"
       required
     ></v-text-field>
     <v-text-field
@@ -34,24 +34,28 @@ export default {
   data() {
     return {
       data:Data,
-      name:"",
+      title:"",
       publisher:"",
       author:"",
     }
   },
     methods: {
       submit () {
-        this.data.push({
-          name: this.name,
-          publisher: this.publisher,
-          author: this.author,
-        })
-        this.$router.push({
+        this.axios.post('https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books', {
+          "title":this.title,
+          "publisher":this.publisher,
+          "auther":this.author
+        }).then(()=>{
+          alert(this.title+'\n' + this.publisher + '\n' + this.author + '\n' + '등록되었습니다.');
+          this.$router.push({
           path:"./Manager"
         })
-        alert(this.autor);
-      },
+      }).catch((err) => {
+        console.log(err);
+      })
+        
     },
+  },
 }
 </script>
 

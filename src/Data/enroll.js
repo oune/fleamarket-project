@@ -1,32 +1,39 @@
-export default [
-    {
-                    name: '대학수학',
-                    publisher: '수학자들의모임',
-                    author: '아리스토텔레스',
-                    book: {
-                        name:'rnjsdlrwn',
-                        grade:'4'
-                    }
-                  },
-                  {
-                    name: '대학물리',
-                    publisher: '물리학자들의 모임',
-                    author: '나는물리학자',
-                    book: {
-                        name:'rnjsdlrwn',
-                        grade:'4'
-                    }
-                  },
-                  {
-                    name: '커피는 맛있다',
-                    publisher: '바리스타의모임',
-                    author: '바리스타',
-                    book: {
-                        name:'rnjsdlrwn',
-                        grade:'4'
-                    }
-                  },
-]
+var data = []
+var tempData='';
+export default {
+  data,tempData,
+}
+
+
+// export default [
+//     {
+//                     title: '대학수학',
+//                     publisher: '수학자들의모임',
+//                     author: '아리스토텔레스',
+//                     book: {
+//                         name:'rnjsdlrwn',
+//                         grade:'4'
+//                     }
+//                   },
+//                   {
+//                     title: '대학물리',
+//                     publisher: '물리학자들의 모임',
+//                     author: '나는물리학자',
+//                     book: {
+//                         name:'rnjsdlrwn',
+//                         grade:'4'
+//                     }
+//                   },
+//                   {
+//                     title: '커피는 맛있다',
+//                     publisher: '바리스타의모임',
+//                     author: '바리스타',
+//                     book: {
+//                         name:'rnjsdlrwn',
+//                         grade:'4'
+//                     }
+//                   },
+// ]
 
 // export default {
 //      data() {
