@@ -76,28 +76,28 @@
                         <v-row>
                           <v-col cols="12" sm="6" md="6">
                             <v-text-field
-                              v-model="editedItem.name"
+                              v-model="editedBookItem.name"
                               label="판매자 이름"
                             ></v-text-field>
                           </v-col>
 
                           <v-col cols="12" sm="6" md="6">
                             <v-text-field
-                              v-model="editedItem.studentId"
+                              v-model="editedBookItem.studentId"
                               label="판매자 학번"
                             ></v-text-field>
                           </v-col>
 
                           <v-col cols="12" sm="6" md="6">
                             <v-text-field
-                              v-model="editedItem.price"
+                              v-model="editedBookItem.price"
                               label="판매가격"
                             ></v-text-field>
                           </v-col>
 
                           <v-col cols="12" sm="6" md="6">
                             <v-text-field
-                              v-model="editedItem.state"
+                              v-model="editedBookItem.state"
                               label="책상태"
                             ></v-text-field>
                           </v-col>
@@ -221,6 +221,13 @@ export default {
     return {
       searchBooks: "",
       searchUsers: "",
+
+      //현재 페이지의 책 아이디값.
+      bookId: "",
+
+      // 총 등록 책 수
+      bookNum: "",
+
       bookHeaders: [
         {
           text: "이름",
@@ -259,22 +266,27 @@ export default {
       dialog: false,
       dialogDelete: false,
       editedIndex: -1,
-      editedItem: {
+      editedBookItem: {
+        name: "",
+        studentId: "",
         price: "",
         state: "",
-        edit: "",
       },
-      defaultItem: {
+      defaultBookItem: {
+        name: "",
+        studentId: "",
         price: "",
         state: "",
-        edit: "",
       },
     };
   },
 
+  //책이름, 저자, 출판사, id 값을 props로 전달 받음.
+  props: {},
+
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? "추가" : "수정";
+      return this.editedBookIndex === -1 ? "추가" : "수정";
     },
 
     //달력 선택 날짜 결과 문자열 변환 yyyy-mm-dd -> mm/dd
@@ -294,7 +306,7 @@ export default {
 
   // api 연결
   beforeMount() {
-    this.testApi();
+    this.getBookList();
   },
 
   //테이블 초기화.
@@ -336,7 +348,7 @@ export default {
     아래가 사용 예시.
     
     */
-    testApi(books) {
+    getBookList() {
       //재고 목록 조회
       //상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 apu에 던져줘야 함.
       this.axios
@@ -345,19 +357,20 @@ export default {
         )
         .then((res) => {
           console.log(res);
-          console.log(res.data);
+          //   console.log(res.data);
           this.books = res.data;
-          console.log(books);
-          console.log(res.data.length);
+          this.bookId = "ssDI5FcuSi2m09teFn5G";
+          //   console.log(books);
+          //   console.log(res.data.length);
         })
         .catch((err) => {
           console.log(err);
         });
     },
 
-    //테이블 아이템 설정
+    //테이블 아이템 설정(재고목록, 예약목록)
     initialize() {
-      this.testApi(this.books);
+      this.getBookList();
 
       this.users = [
         {
@@ -388,29 +401,118 @@ export default {
     },
 
     //사용자 에약 목록관련
-    //기존 예약 삭제기능.
+    //기존 예약 조회, 삭제기능.
 
-    //수정하려고 누르자 마자 수행
-    //누른 곳의 데이터를 가져와서 다이얼로그와 바로 연결하기 위한 함수
+    // deleteUserItem(item) {
+    //   console.log("deleteItem");
+    //   this.editedIndex = this.books.indexOf(item);
+    //   this.editedItem = Object.assign({}, item);
+    //   this.dialogDelete = true;
+    // },
+
+    // //삭제 확인을 누르면 수행
+    // deleteUserItemConfirm() {
+    //   console.log("deleteItemConfirm");
+    //   this.books.splice(this.editedIndex, 1);
+    //   this.closeDelete();
+    // },
+
+    // //dialog 닫히면 수행
+    // close() {
+    //   console.log("close");
+    //   this.dialog = false;
+    //   this.$nextTick(() => {
+    //     this.editedItem = Object.assign({}, this.defaultItem);
+    //     this.editedIndex = -1;
+    //   });
+    // },
+
+    // //삭제 확인을 누르면 deleteItemConfirm 이후 수행
+    // closeUserDelete() {
+    //   console.log("closeDelete");
+    //   this.dialogDelete = false;
+    //   this.$nextTick(() => {
+    //     this.editedItem = Object.assign({}, this.defaultItem);
+    //     this.editedIndex = -1;
+    //   });
+    // },
+
+    //-----예약 기능함수 끝-----
 
     //책 목록관련
 
     //통신 함수
-    addBooksList() {},
+    //git ignore 로 주소를 숨길 필요가 있을듯.
+
+    //재고 추가
+    addBooksList(item) {
+      console.log("데이터");
+      console.log(item);
+      let body = {
+        name: item.name,
+        studentId: item.studentId,
+        price: item.price,
+        state: item.state,
+      };
+      this.axios
+        .post(
+          `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/${this.bookId}/Stocks`,
+          body
+        )
+        .then
+
+        //     (res) => {
+        //     console.log(res);
+        // }
+        ()
+
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+
+    //재고 수정
+    modiBooksList(item) {
+      console.log("modiBookList");
+      console.log(item);
+      let body = {
+        name: item.name,
+        studentId: item.studentId,
+        price: item.price,
+        state: item.state,
+      };
+      this.axios
+        .put(
+          `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/stocks/${item.id}`,
+          body
+        )
+        .then((res) => {
+          console.log("수정 성공.");
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+
+    //재고 삭제
+    delBooks() {},
+
+    //-----통신 함수 끝-----
 
     //기능 동작 함수
     editItem(item) {
       console.log("editItem");
-      this.editedIndex = this.books.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+      this.editedBookIndex = this.books.indexOf(item);
+      this.editedBookItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     //삭제 아이콘을 누르자 마자 수행
     deleteItem(item) {
       console.log("deleteItem");
-      this.editedIndex = this.books.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+      this.editedBookIndex = this.books.indexOf(item);
+      this.editedBookItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
@@ -426,8 +528,8 @@ export default {
       console.log("close");
       this.dialog = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
+        this.editedBookItem = Object.assign({}, this.defaultBookItem);
+        this.editedBookIndex = -1;
       });
     },
 
@@ -436,8 +538,8 @@ export default {
       console.log("closeDelete");
       this.dialogDelete = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
+        this.editedBookItem = Object.assign({}, this.defaultBookItem);
+        this.editedBookIndex = -1;
       });
     },
 
@@ -450,14 +552,20 @@ export default {
       //   }
 
       //수정하는경우
-      if (this.editedIndex > -1) {
+      if (this.editedBookIndex > -1) {
         console.log("수정");
-        Object.assign(this.books[this.editedIndex], this.editedItem);
+        Object.assign(this.books[this.editedBookIndex], this.editedBookItem);
+
+        this.modiBooksList(this.books[this.editedBookIndex]);
       }
       //추가하는 경우
       else {
         console.log("추가");
-        this.books.push(this.editedItem);
+        this.books.push(this.editedBookItem);
+
+        //재고추가 post
+        const curIndex = this.books.indexOf(this.editedBookItem);
+        this.addBooksList(this.books[curIndex]);
       }
       this.close();
     },
@@ -467,7 +575,7 @@ export default {
 
 <style>
 .mdi-arrow-up {
-  width: 13px;
+  width: 12px;
   height: 0px;
 }
 </style>
