@@ -1,7 +1,8 @@
 var data = []
+var temparr = []
 var tempData='';
 export default {
-  data,tempData,
+  data,tempData,temparr,
 }
 
 

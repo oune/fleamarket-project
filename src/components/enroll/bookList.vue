@@ -1,105 +1,286 @@
 <template>
-    <div class = 'wrap'>
-        <v-simple-table>
-      <thead>
-        <tr>
-          <th class="text-left">
-            title
-          </th>
-          <th class="text-left">
-            publisher
-          </th>
-          <th class = 'text-left'>
-            author
-          </th>
-          <th class = 'text-left'>
-            stocks
-          </th>
-          
-          <th class = 'text-left'>
-          
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          :key='index' v-for='(value, index) in info.data'
-          @click="moveToDetail"
+<div class = 'wrap'>
+  <v-data-table
+    :headers="headers"
+    :items="data"
+    :search="search"
+    class="elevation-1"
+  >
+    <template v-slot:top>
+      <v-toolbar
+        flat
+      >
+        <v-toolbar-title>
+          List of books
+        </v-toolbar-title>
+        <v-divider
+          class="mx-4"
+          inset
+          vertical
+        ></v-divider>
+        <v-text-field
+        v-model="search"
+        append-icon="mdi-magnify"
+        label="Search"
+        single-line
+        hide-details
+      ></v-text-field>
+        <v-divider
+          class="mx-4"
+          inset
+          vertical
+        ></v-divider>
+        <v-spacer></v-spacer>
+        <v-dialog
+          v-model="dialog"
+          max-width="500px"
         >
-          <td>{{ value.title }}</td>
-          <td>{{ value.publisher }}</td>
-          <td>{{ value.auther }}</td>
-          <td>{{ value.stockCount }}</td>
-          <td><v-btn class='deleteBtn' @click='bookDel'>삭제</v-btn></td>
-          
-        </tr>
-      </tbody>
-  </v-simple-table>
-    </div>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="primary"
+              dark
+              class="mb-2"
+              v-bind="attrs"
+              v-on="on"
+            >
+              Add a book
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title>
+              <span class="headline">{{ formTitle }}</span>
+            </v-card-title>
+
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col
+                    cols="12"
+                    sm="6"
+                    md="4"
+                  >
+                    <v-text-field
+                      v-model="editedItem.title"
+                      label="title"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    sm="6"
+                    md="4"
+                  >
+                    <v-text-field
+                      v-model="editedItem.publisher"
+                      label="publisher"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    sm="6"
+                    md="4"
+                  >
+                    <v-text-field
+                      v-model="editedItem.author"
+                      label="author"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="blue darken-1"
+                text
+                @click="close"
+              >
+                Cancel
+              </v-btn>
+              <v-btn
+                color="blue darken-1"
+                text
+                @click="save"
+              >
+                Save
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="dialogDelete" max-width="500px">
+          <v-card>
+            <v-card-title class="headline">Are you sure you want to delete this item?</v-card-title>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+              <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-toolbar>
+    </template>
+    <template v-slot:item.actions="{ item }">
+      <v-icon
+        small
+        class="mr-2"
+        @click="editItem(item)"
+      >
+        mdi-pencil
+      </v-icon>
+      <v-icon
+        small
+        @click="deleteItem(item)"
+      >
+        mdi-delete
+      </v-icon>
+    </template>
+    <template v-slot:no-data>
+      <v-btn
+        color="primary"
+        @click="initialize"
+      >
+        Reset
+      </v-btn>
+    </template>
+  </v-data-table>
+  </div>
 </template>
 
-
 <script>
-import Data from '../../Data/enroll'
   export default {
-    data () {
-      return {
-        info:Data,
-        tempID : '',
-      }
-    },
-    created() {
-       this.axios.get('https://us-central1-kit-fleamarket.cloudfunctions.net/books').then((res) => {
-        this.info.data = res.data;
-       })
-    },
-     methods: {
-       moveToDetail(e) {
-         var test = e.target.nodeName;
-         if(test == 'TD') {
-           this.$router.push({
-           path:"./detailEnroll"
-         })
-        }
-        //  console.log(test);
-         
-       },
-       bookDel(e) {
-         var deleteBtn = e.target
-         var titleText = deleteBtn.parentNode.parentNode.parentNode.firstChild.textContent;
-        //  console.log(deleteBtn.parentNode);
-         console.log(titleText);
-         var yes = confirm('정말 삭제하시겠습니까?');
-         if(yes === true) {
-           for(var i=0; i<this.info.data.length; i++) {
-             console.log(this.info.data[i].title);
-          if(this.info.data[i].title === titleText) {
-            this.tempID = this.info.data[i].id;
-            break;
-          }
-         }
-         console.log(this.tempID);
-         this.axios.delete('https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/' + this.tempID)
-         .then(()=>{
-           
-           alert('삭제되었습니다.');
-           this.tempID='';
-           location.reload();
-         })
-         .catch((err)=> {
-           alert('새로고침 후 다시 시도해주세요.');
-           console.log(err);
-         })
-         }
-       }
-    }
-  }
-   
+    data: () => ({
+      dialog: false,
+      dialogDelete: false,
+      search : '',
+      headers: [
+        {
+          text: 'title',
+          align: 'start',
+          sortable: true,
+          value: 'title',
+        },
+        { text: 'publisher', value: 'publisher' },
+        { text: 'author', value: 'auther' },
+        { text: 'stocks', value: 'stockCount' },
+        { text: 'reservations', value: 'reservationCount' },
+        { text: 'Actions', value: 'actions', sortable: false },
+      ],
+      data: [],
+      editedIndex: -1,
+      editedItem: {
+        title: '',
+        publisher: '',
+        author: '',
+        stocks: '',
+      },
+      defaultItem: {
+        title: '',
+        publisher: '',
+        author: '',
+        stocks: '',
+      },
+    }),
 
+    computed: {
+      formTitle () {
+        return this.editedIndex === -1 ? 'New Book' : 'Edit Book'
+      },
+    },
+
+    watch: {
+      dialog (val) {
+        val || this.close()
+      },
+      dialogDelete (val) {
+        val || this.closeDelete()
+      },
+    },
+
+    created () {
+      this.initialize()
+    },
+
+    methods: {
+      initialize () {
+        this.axios.get('https://us-central1-kit-fleamarket.cloudfunctions.net/books').then((res)=> {
+          this.data = res.data;
+          console.log(this.data);
+        })
+      },
+
+      editItem (item) {
+        this.editedIndex = this.data.indexOf(item)
+        console.log(item);
+        this.editedItem = Object.assign({}, item)
+        this.dialog = true
+      },
+
+      deleteItem (item) {
+        this.editedIndex = this.data.indexOf(item)
+        this.editedItem = Object.assign({}, item)
+        console.log('deleteItem');
+        this.dialogDelete = true
+      },
+
+      deleteItemConfirm () {
+        // console.log(this.data[this.editedIndex].id);
+         this.axios.delete('https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/' + this.data[this.editedIndex].id).then((res) => {
+           alert('삭제되었습니다.');
+           console.log(res);
+           this.data.splice(this.editedIndex, 1);
+           this.initialize();
+         }).catch((res) => {
+           console.log(res);
+           alert('새로고침 후 다시 시도해주세요.');
+         })
+        
+        this.closeDelete()
+      },
+
+      close () {
+        this.dialog = false
+        // console.log('close()');
+        this.$nextTick(() => {
+          this.editedItem = Object.assign({}, this.defaultItem)
+          this.editedIndex = -1
+        })
+      },
+
+      closeDelete () {
+        this.dialogDelete = false
+        this.$nextTick(() => {
+          this.editedItem = Object.assign({}, this.defaultItem)
+          this.editedIndex = -1
+        })
+      },
+
+      save () {
+        if (this.editedIndex > -1) {
+          Object.assign(this.data[this.editedIndex], this.editedItem)
+          alert('1');
+        } else {
+          this.axios.post('https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books', {
+          "title":this.editedItem.title,
+          "publisher":this.editedItem.publisher,
+          "auther":this.editedItem.author
+        }).then(()=>{
+          alert('등록되었습니다.');
+          this.initialize();
+      }).catch((err) => {
+        console.log(err);
+      })
+        }
+        this.close()
+      },
+    },
+  }
 </script>
 
 <style scoped>
-  td {
-    text-align: center;
-  }
+.wrap {
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
 </style>

@@ -81,5 +81,8 @@ export default {
     width:100%;
     top:100%
 }
+v-text-field {
+  margin-bottom:100px;
+}
 </style>
 

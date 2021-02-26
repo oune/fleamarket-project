@@ -1,9 +1,9 @@
 <template>
     <div class = 'listContainer'>
-        <div class="text-center">
+        <!-- <div class="text-center">
     <v-btn rounded color="primary" dark @click="GoToEnroll">책 등록하기</v-btn>
   </div>
-        <br>
+        <br> -->
         <bookList />
     </div>
 
