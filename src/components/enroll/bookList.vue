@@ -108,8 +108,8 @@
           </v-card>
         </v-dialog>
         <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="headline">Are you sure you want to delete this item?</v-card-title>
+          <v-card style='text-align:center'>
+            <v-card-title class="headline">삭제하시겠습니까?</v-card-title>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
@@ -127,6 +127,14 @@
         @click="editItem(item)"
       >
         mdi-pencil
+      </v-icon>
+      
+        <v-icon
+        small
+        class="mr-5"
+        @click="postDetail(item)"
+      >
+      mdi-arrow-up-bold-box-outline
       </v-icon>
       <v-icon
         small
@@ -152,19 +160,24 @@
     data: () => ({
       dialog: false,
       dialogDelete: false,
+      sendID:'',
+      sendPublisher:'',
+      sendAuthor:'',
+      sendTitle:'',
       search : '',
       headers: [
         {
           text: 'title',
-          align: 'start',
+          align: 'center',
           sortable: true,
           value: 'title',
         },
-        { text: 'publisher', value: 'publisher' },
-        { text: 'author', value: 'auther' },
-        { text: 'stocks', value: 'stockCount' },
-        { text: 'reservations', value: 'reservationCount' },
-        { text: 'Actions', value: 'actions', sortable: false },
+        { text: 'publisher', value: 'publisher', align:'center' },
+        { text: 'author', value: 'author',align:'center'},
+        { text: 'stocks', value: 'stockCount',sortable: false,align:'center'},
+        { text: 'reservations', value: 'reservationCount',sortable: false,align:'center' },
+        { text: 'Actions', value: 'actions', sortable: false,align:'center' },
+        // { text: 'details', value: 'details', sortable: false },
       ],
       data: [],
       editedIndex: -1,
@@ -257,13 +270,26 @@
 
       save () {
         if (this.editedIndex > -1) {
-          Object.assign(this.data[this.editedIndex], this.editedItem)
+          // Object.assign(this.data[this.editedIndex], this.editedItem)
+          console.log(this.data[this.editedIndex].id);
+          this.axios.put('https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/' + this.data[this.editedIndex].id, {
+            "title" : this.editedItem.title,
+            "publisher" : this.editedItem.publisher,
+            "author" : this.editedItem.author
+          }).then((res)=> {
+            console.log(res);
+            alert('수정되었습니다.');
+            this.initialize();
+          }).catch((res)=> {
+            alert('오류발생');
+            console.log(res);
+          })
           alert('1');
         } else {
           this.axios.post('https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books', {
-          "title":this.editedItem.title,
-          "publisher":this.editedItem.publisher,
-          "auther":this.editedItem.author
+          "title" : this.editedItem.title,
+          "publisher" : this.editedItem.publisher,
+          "author" : this.editedItem.author
         }).then(()=>{
           alert('등록되었습니다.');
           this.initialize();
@@ -273,14 +299,27 @@
         }
         this.close()
       },
+      postDetail(item) {
+        this.sendID = item.id;
+        this.sendPublisher = item.publisher;
+        this.sendAuthor = item.author;
+        this.sendTitle = item.title
+        this.$router.push({
+          path:'/about', query:{id:this.sendID, publisher: this.sendPublisher, author: this.sendAuthor, title:this.sendTitle}
+        })
+      }
     },
   }
 </script>
 
 <style scoped>
 .wrap {
+  position: absolute;
+  top:5%;
+  width:100%;
   display:flex;
   justify-content: center;
   align-items: center;
 }
+
 </style>
