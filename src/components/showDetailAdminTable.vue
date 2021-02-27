@@ -44,6 +44,7 @@
             sort-by="name"
             class="elevation-1"
             mobile-breakpoint="0"
+            @click:row="check"
           >
             <template v-slot:top>
               <v-toolbar flat>
@@ -188,7 +189,9 @@
                   예약 현황 {{ curUserNum }}/{{ totalUserNum }}
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
-
+                <v-toolbar-title>
+                  다음 새로고침 까지 ( {{ count }} )</v-toolbar-title
+                >
                 <!-- 삭제 -->
                 <v-dialog
                   persistent
@@ -242,20 +245,19 @@ export default {
 
   data() {
     return {
-      searchBooks: "",
-      searchUsers: "",
+      count: 5,
 
-      //현재 페이지의 책 아이디값.
-      // bookId: "ssDI5FcuSi2m09teFn5G",
+      //현재 페이지의 책 아이디값.(테스트용)
       bookId: "Q30hUnLZ6gzrDBQtNXmS",
+      // bookId: "VfGt9WV25Bz2BiPecRcM"
 
       selectState: ["A", "B", "C"],
 
       // 총 등록 책 수
-      bookNum: "",
+      bookNum: 0,
 
       //현재 예약자 수
-      curUserNum: "",
+      curUserNum: 0,
       //총 예약 가능한 수
       totalUserNum: "",
 
@@ -372,15 +374,37 @@ export default {
     },
   },
 
-  beforeMount() {},
+  mounted() {
+    setInterval(() => {
+      if (this.count === "완료") {
+        this.count = 6;
+      }
+      this.count--;
+      if (this.count === 0) {
+        this.count = "완료";
+        // this.getUserList();
+      }
+    }, 1000);
+  },
 
   // api 연결
   //테이블 초기화.
   created() {
     this.initialize();
+
+    //10초마다 예약자 확인
+    //예약자 변동이 확인되면 (통신 결과 현재 예약자 수와 다르면)
+    //알람.
+    // this.testfunc();
   },
 
   methods: {
+    check(row) {
+      if (!this.dialogBook) {
+        console.log(row);
+      }
+    },
+
     //재고 목록 조회
     //초기화 함수(재고, 예약)
     //현재 등록되어 있는 책의 수(totalUserNum), 책 정보를 가져와서 재고 테이블에 초기화.
@@ -460,16 +484,16 @@ export default {
           // `https://us-central1-kit-fleamarket.cloudfunctions.net/books/${this.bookId}/reservations/${this.delUserId}?password=${this.delUserPs}`
 
           //두가지 방법 모두 421에러 발생.
-          //책 id, 예약자 고유 id, 비밀번호 를 json 에서 그대로 가져와서 요청해도 421에러 발생...????????
+          //책 id, 예약자 고유 id, 비밀번호 를 json 에서 그대로 가져와서 요청해도 421에러 발생...???????? -> 비밀번호 원형이 필요
         )
         .then((res) => {
           console.log(res);
         })
         .catch((err) => {
-          console.log("삭제정보");
-          console.log(this.bookId);
-          console.log(this.delUserId);
-          console.log(this.delUserPs);
+          // console.log("삭제정보");
+          // console.log(this.bookId);
+          // console.log(this.delUserId);
+          // console.log(this.delUserPs);
           console.log(err);
         });
     },
