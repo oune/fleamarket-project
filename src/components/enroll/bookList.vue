@@ -177,7 +177,6 @@
         { text: 'stocks', value: 'stockCount',sortable: false,align:'center'},
         { text: 'reservations', value: 'reservationCount',sortable: false,align:'center' },
         { text: 'Actions', value: 'actions', sortable: false,align:'center' },
-        // { text: 'details', value: 'details', sortable: false },
       ],
       data: [],
       editedIndex: -1,
@@ -284,7 +283,6 @@
             alert('오류발생');
             console.log(res);
           })
-          alert('1');
         } else {
           this.axios.post('https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books', {
           "title" : this.editedItem.title,
