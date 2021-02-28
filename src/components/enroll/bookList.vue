@@ -22,7 +22,7 @@
               ></v-text-field>
               <v-divider class="mx-4" inset vertical></v-divider>
               <v-spacer></v-spacer>
-              <v-dialog v-model="dialog" max-width="500px">
+              <v-dialog persistent v-model="dialog" max-width="500px">
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn
                     color="primary"
@@ -75,7 +75,7 @@
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-              <v-dialog v-model="dialogDelete" max-width="500px">
+              <v-dialog persistent v-model="dialogDelete" max-width="500px">
                 <v-card style="text-align: center">
                   <v-card-title class="headline"
                     >삭제하시겠습니까?</v-card-title
@@ -104,7 +104,9 @@
             </v-icon>
             <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
           </template>
-          <template v-slot:no-data> Loading </template>
+          <template v-slot:no-data>
+            <v-progress-linear indeterminate color="cyan"></v-progress-linear
+          ></template>
         </v-data-table>
       </v-col>
     </v-row>
