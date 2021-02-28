@@ -1,9 +1,5 @@
 <template>
     <div class = 'listContainer'>
-        <!-- <div class="text-center">
-    <v-btn rounded color="primary" dark @click="GoToEnroll">책 등록하기</v-btn>
-  </div>
-        <br> -->
         <bookList />
     </div>
 
@@ -23,11 +19,7 @@ export default {
         }
     },
     methods: {
-        GoToEnroll() {
-            this.$router.push({
-                path:'./bookEnroll'
-            })
-        }
+        
     }
 }
 </script>

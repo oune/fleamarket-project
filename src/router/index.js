@@ -2,8 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Enroll from '../views/Enroll.vue'
-import bookEnroll from '../views/bookEnroll.vue'
-import bookDetailEnroll from '../views/bookDetailEnroll.vue'
+
 
 
 Vue.use(VueRouter)
@@ -27,16 +26,6 @@ const routes = [
     name:'Manager',
     component: Enroll
   },
-  {
-    path:'/bookenroll',
-    name:'bookenroll',
-    component : bookEnroll
-  },
-  {
-    path:'/detailenroll',
-    name:'detailenroll',
-    component : bookDetailEnroll
-  }
 ]
 
 const router = new VueRouter({
