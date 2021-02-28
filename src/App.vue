@@ -1,29 +1,27 @@
 <template>
   <v-app>
-    <pcMenuBar />
-    <v-main>
-      <showDetailAdmin />
-      <!-- <HelloWorld /> -->
-    </v-main>
+    <router-view></router-view>
   </v-app>
 </template>
 
 <script>
 // import HelloWorld from "./components/HelloWorld";
-import pcMenuBar from "@/components/pcMenuBar";
-import showDetailAdmin from "@/views/showDetailAdmin";
+// import pcMenuBar from "@/components/pcMenuBar";
 
-export default {
-  name: "App",
+// export default {
+//   name: "App",
 
-  components: {
-    // HelloWorld,
-    pcMenuBar,
-    showDetailAdmin,
-  },
+//   components: {
+//     HelloWorld,
+//     pcMenuBar,
+//   },
 
-  data: () => ({
-    //
-  }),
-};
+//   data: () => ({
+//     //
+//   }),
+// };
 </script>
+
+<style scoped>
+
+</style>
