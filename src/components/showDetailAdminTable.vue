@@ -158,6 +158,9 @@
               </v-icon>
               <v-icon small @click="deleteBookItem(item)"> mdi-delete </v-icon>
             </template>
+            <template v-slot:no-data>
+              <v-progress-linear indeterminate color="cyan"></v-progress-linear>
+            </template>
           </v-data-table>
         </v-card>
       </v-col>
@@ -221,6 +224,9 @@
             </template>
             <template v-slot:item.actions="{ item }">
               <v-icon small @click="deleteUserItem(item)"> mdi-delete </v-icon>
+            </template>
+            <template v-slot:no-data>
+              <v-progress-linear indeterminate color="cyan"></v-progress-linear>
             </template>
           </v-data-table>
         </v-card>
