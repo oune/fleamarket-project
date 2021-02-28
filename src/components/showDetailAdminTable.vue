@@ -1,7 +1,6 @@
 <template>
   <v-container>
     <!-- 책이름, 저자,출판사, 검색 -->
-    <!-- 현재 로딩 화면 X -->
     <v-row>
       <v-col cols="12">
         <v-card class="cover">
@@ -44,7 +43,6 @@
             sort-by="name"
             class="elevation-1"
             mobile-breakpoint="0"
-            @click:row="check"
           >
             <template v-slot:top>
               <v-toolbar flat>
@@ -104,10 +102,6 @@
                               v-model="editedBookItem.state"
                             >
                             </v-select>
-                            <!-- <v-text-field
-                              v-model="editedBookItem.state"
-                              label="책상태"
-                            ></v-text-field> -->
                           </v-col>
                         </v-row>
                       </v-container>
@@ -236,20 +230,13 @@
 </template>
 
 <script>
-// import table from "@/components/showDetailAdminTable";
-
 export default {
-  components: {
-    // table,
-  },
-
   data() {
     return {
       count: 5,
 
       //현재 페이지의 책 아이디값.(테스트용)
-      bookId: "Q30hUnLZ6gzrDBQtNXmS",
-      // bookId: "VfGt9WV25Bz2BiPecRcM"
+      bookId: "7wf7FXSyZh5CenW7ln9t",
 
       selectState: ["A", "B", "C"],
 
@@ -282,7 +269,6 @@ export default {
           value: "name",
         },
         { text: "학번", value: "studentId" },
-        { text: "날짜", value: "day" },
         { text: "시간", value: "time" },
         { text: "삭제", value: "actions", sortable: false },
       ],
@@ -349,11 +335,6 @@ export default {
     formTitle() {
       return this.editedBookIndex === -1 ? "추가" : "수정";
     },
-
-    //달력 선택 날짜 결과 문자열 변환 yyyy-mm-dd -> mm/dd
-    dateStringSlice() {
-      return this.date.slice(5, 7) + "/" + this.date.slice(8, 10);
-    },
   },
 
   watch: {
@@ -382,7 +363,7 @@ export default {
       this.count--;
       if (this.count === 0) {
         this.count = "완료";
-        // this.getUserList();
+        this.getUserList();
       }
     }, 1000);
   },
@@ -391,20 +372,9 @@ export default {
   //테이블 초기화.
   created() {
     this.initialize();
-
-    //10초마다 예약자 확인
-    //예약자 변동이 확인되면 (통신 결과 현재 예약자 수와 다르면)
-    //알람.
-    // this.testfunc();
   },
 
   methods: {
-    check(row) {
-      if (!this.dialogBook) {
-        console.log(row);
-      }
-    },
-
     //재고 목록 조회
     //초기화 함수(재고, 예약)
     //현재 등록되어 있는 책의 수(totalUserNum), 책 정보를 가져와서 재고 테이블에 초기화.
@@ -438,15 +408,7 @@ export default {
           this.users = res.data;
           console.log("예약목록 조회");
           console.log(res);
-          // console.log(res.data[0].time);
-          // console.log(res.data[0].time.slice(5, 7)); //월
-          // console.log(res.data[0].time.slice(8, 10)); //일
-          // console.log(res.data[0].time.slice(11, 13)); //시간
-          // this.users =
-          //   console.log(res.data);
-          //   this.users = res.data;
-          //   console.log(books);
-          //   console.log(res.data.length);
+          console.log(res.data.time);
         })
         .catch((err) => {
           console.log(err);
@@ -472,28 +434,11 @@ export default {
     delUsers() {
       this.axios
         .delete(
-          // https://us-central1-kit-fleamarket.cloudfunctions.net/books/:bookID/reservations/:reservationId?password=1234
-
-          //   `https://us-central1-kit-fleamarket.cloudfunctions.net/books/${this.bookId}/reservations/${this.delUserId}`,
-          //   {
-          //     params: {
-          //       password: this.delUserPs,
-          //     },
-          //   }
-          "https://us-central1-kit-fleamarket.cloudfunctions.net/books/Q30hUnLZ6gzrDBQtNXmS/reservations/QwJNqYtdRX9H11sm9glG?password=$2b$10$PEZw.KH9tpVwfmf5EOvG..tJj/U2u/7hvuH5uw9dxiWK1BzlbvLUm"
-          // `https://us-central1-kit-fleamarket.cloudfunctions.net/books/${this.bookId}/reservations/${this.delUserId}?password=${this.delUserPs}`
-
-          //두가지 방법 모두 421에러 발생.
-          //책 id, 예약자 고유 id, 비밀번호 를 json 에서 그대로 가져와서 요청해도 421에러 발생...???????? -> 비밀번호 원형이 필요
+          `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/${this.bookId}/reservations/${this.delUserId}`
         )
-        .then((res) => {
-          console.log(res);
-        })
+        .then()
         .catch((err) => {
-          // console.log("삭제정보");
-          // console.log(this.bookId);
-          // console.log(this.delUserId);
-          // console.log(this.delUserPs);
+          console.log("예약 삭제 에러 발생");
           console.log(err);
         });
     },
@@ -551,13 +496,13 @@ export default {
           `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/${this.bookId}/Stocks`,
           body
         )
-        .then((res) => {
-          console.log(res);
+        .then(() => {
           //새로고침.
-          window.location.reload();
+          this.getBookList();
         })
 
         .catch((err) => {
+          console.log("재고 추가 에러 발생");
           console.log(err);
         });
     },
@@ -575,11 +520,9 @@ export default {
           `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/stocks/${item.id}`,
           body
         )
-        .then((res) => {
-          console.log("수정 성공.");
-          console.log(res);
-        })
+        .then()
         .catch((err) => {
+          console.log("재고 수정 에러 발생");
           console.log(err);
         });
     },
@@ -590,10 +533,9 @@ export default {
         .delete(
           `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/${this.bookId}/stocks/${this.delBookId}`
         )
-        .then((res) => {
-          console.log(res);
-        })
+        .then()
         .catch((err) => {
+          console.log("재고 삭제 에러 발생");
           console.log(err);
         });
     },
