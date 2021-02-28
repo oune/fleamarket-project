@@ -301,12 +301,4 @@ export default {
 </script>
 
 <style scoped>
-.wrap {
-  position: absolute;
-  top: 5%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 </style>
