@@ -23,9 +23,15 @@ const routes = [
   },
   {
     path: '/Manager',
-    name:'Manager',
+    name: 'Manager',
     component: Enroll
   },
+  {
+    path: '/showDetail/:id&:publisher&:author&:title',
+    name: 'showDetail',
+    component: () => import('@/views/showDetailAdmin.vue')
+
+  }
 ]
 
 const router = new VueRouter({

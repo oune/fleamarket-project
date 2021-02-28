@@ -8,6 +8,7 @@
           :search="search"
           class="elevation-1"
           mobile-breakpoint="0"
+          @click:row="testFunction"
         >
           <template v-slot:top>
             <v-toolbar flat>
@@ -98,10 +99,6 @@
             <v-icon small class="mr-2" @click="editItem(item)">
               mdi-pencil
             </v-icon>
-
-            <v-icon small class="mr-5" @click="postDetail(item)">
-              mdi-arrow-up-bold-box-outline
-            </v-icon>
             <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
           </template>
           <template v-slot:no-data>
@@ -177,6 +174,36 @@ export default {
   },
 
   methods: {
+    testFunction(row) {
+      if (!this.dialog && !this.dialogDelete) {
+        this.$router.push({
+          name: "showDetail",
+          params: {
+            id: row.id,
+            publisher: row.publisher,
+            author: row.author,
+            title: row.title,
+          },
+        });
+      }
+    },
+
+    postDetail(item) {
+      this.sendID = item.id;
+      this.sendPublisher = item.publisher;
+      this.sendAuthor = item.author;
+      this.sendTitle = item.title;
+      this.$router.push({
+        path: "/about",
+        query: {
+          id: this.sendID,
+          //publisher: this.sendPublisher,
+          //author: this.sendAuthor,
+          //title: this.sendTitle,
+        },
+      });
+    },
+
     initialize() {
       this.axios
         .get("https://us-central1-kit-fleamarket.cloudfunctions.net/books")
@@ -281,24 +308,12 @@ export default {
       }
       this.close();
     },
-    postDetail(item) {
-      this.sendID = item.id;
-      this.sendPublisher = item.publisher;
-      this.sendAuthor = item.author;
-      this.sendTitle = item.title;
-      this.$router.push({
-        path: "/about",
-        query: {
-          id: this.sendID,
-          publisher: this.sendPublisher,
-          author: this.sendAuthor,
-          title: this.sendTitle,
-        },
-      });
-    },
   },
 };
 </script>
 
-<style scoped>
+<style>
+tbody > tr {
+  cursor: pointer;
+}
 </style>
