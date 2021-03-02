@@ -8,7 +8,7 @@
           :search="search"
           class="elevation-1"
           mobile-breakpoint="0"
-          @click:row="testFunction"
+          @click:row="link"
         >
           <template v-slot:top>
             <v-toolbar flat>
@@ -68,11 +68,9 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="close">
-                      Cancel
+                      아니오
                     </v-btn>
-                    <v-btn color="blue darken-1" text @click="save">
-                      Save
-                    </v-btn>
+                    <v-btn color="blue darken-1" text @click="save"> 네 </v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -84,10 +82,10 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="closeDelete"
-                      >Cancel</v-btn
+                      >아니오</v-btn
                     >
                     <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                      >OK</v-btn
+                      >네</v-btn
                     >
                     <v-spacer></v-spacer>
                   </v-card-actions>
@@ -111,6 +109,8 @@
 </template>
 
 <script>
+import api from "@/key";
+
 export default {
   data: () => ({
     dialog: false,
@@ -174,7 +174,7 @@ export default {
   },
 
   methods: {
-    testFunction(row) {
+    link(row) {
       if (!this.dialog && !this.dialogDelete) {
         this.$router.push({
           name: "showDetail",
@@ -188,29 +188,10 @@ export default {
       }
     },
 
-    postDetail(item) {
-      this.sendID = item.id;
-      this.sendPublisher = item.publisher;
-      this.sendAuthor = item.author;
-      this.sendTitle = item.title;
-      this.$router.push({
-        path: "/about",
-        query: {
-          id: this.sendID,
-          //publisher: this.sendPublisher,
-          //author: this.sendAuthor,
-          //title: this.sendTitle,
-        },
-      });
-    },
-
     initialize() {
-      this.axios
-        .get("https://us-central1-kit-fleamarket.cloudfunctions.net/books")
-        .then((res) => {
-          this.data = res.data;
-          console.log(this.data);
-        });
+      this.axios.get(`${api.url}/books`).then((res) => {
+        this.data = res.data;
+      });
     },
 
     editItem(item) {
@@ -230,13 +211,10 @@ export default {
     deleteItemConfirm() {
       // console.log(this.data[this.editedIndex].id);
       this.axios
-        .delete(
-          "https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/" +
-            this.data[this.editedIndex].id
-        )
-        .then((res) => {
+        .delete(`${api.url}/admin/books/${this.data[this.editedIndex].id}`)
+        .then(() => {
           alert("삭제되었습니다.");
-          console.log(res);
+
           this.data.splice(this.editedIndex, 1);
           this.initialize();
         })
@@ -270,17 +248,12 @@ export default {
         // Object.assign(this.data[this.editedIndex], this.editedItem)
         console.log(this.data[this.editedIndex].id);
         this.axios
-          .put(
-            "https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/" +
-              this.data[this.editedIndex].id,
-            {
-              title: this.editedItem.title,
-              publisher: this.editedItem.publisher,
-              author: this.editedItem.author,
-            }
-          )
-          .then((res) => {
-            console.log(res);
+          .put(`${api.url}/admin/books/${this.data[this.editedIndex].id}`, {
+            title: this.editedItem.title,
+            publisher: this.editedItem.publisher,
+            author: this.editedItem.author,
+          })
+          .then(() => {
             alert("수정되었습니다.");
             this.initialize();
           })
@@ -290,14 +263,11 @@ export default {
           });
       } else {
         this.axios
-          .post(
-            "https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books",
-            {
-              title: this.editedItem.title,
-              publisher: this.editedItem.publisher,
-              author: this.editedItem.author,
-            }
-          )
+          .post(`${api.url}/admin/books`, {
+            title: this.editedItem.title,
+            publisher: this.editedItem.publisher,
+            author: this.editedItem.author,
+          })
           .then(() => {
             alert("등록되었습니다.");
             this.initialize();
