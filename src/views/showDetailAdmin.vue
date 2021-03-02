@@ -159,7 +159,13 @@
               <v-icon small @click="deleteBookItem(item)"> mdi-delete </v-icon>
             </template>
             <template v-slot:no-data>
-              <v-progress-linear indeterminate color="cyan"></v-progress-linear>
+              <div v-if="totalUserNum === null">
+                <v-progress-linear
+                  indeterminate
+                  color="cyan"
+                ></v-progress-linear>
+              </div>
+              <div v-else>재고 없음</div>
             </template>
           </v-data-table>
         </v-card>
@@ -227,7 +233,13 @@
               <v-icon small @click="deleteUserItem(item)"> mdi-delete </v-icon>
             </template>
             <template v-slot:no-data>
-              <v-progress-linear indeterminate color="cyan"></v-progress-linear>
+              <div v-if="curUserNum === null">
+                <v-progress-linear
+                  indeterminate
+                  color="cyan"
+                ></v-progress-linear>
+              </div>
+              <div v-else>예약자 없음</div>
             </template>
           </v-data-table>
         </v-card>
@@ -254,9 +266,9 @@ export default {
       selectState: ["A", "B", "C"],
 
       //현재 예약자 수
-      curUserNum: 0,
+      curUserNum: null,
       //총 예약 가능한 수
-      totalUserNum: "",
+      totalUserNum: null,
 
       bookHeaders: [
         {
@@ -415,7 +427,7 @@ export default {
           this.curUserNum = res.data.length;
           this.users = res.data;
           if (this.isRefresh) {
-            this.snackbarControll("예약 목록 새로고침 성공");
+            this.snackbarControll("예약 목록 새로고침 완료");
             this.isRefresh = !this.isRefresh;
           }
         })

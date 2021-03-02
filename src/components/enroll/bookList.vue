@@ -12,16 +12,25 @@
         >
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title> List of books </v-toolbar-title>
-              <v-divider class="mx-4" inset vertical></v-divider>
-              <v-text-field
-                v-model="search"
-                append-icon="mdi-magnify"
-                label="Search"
-                single-line
-                hide-details
-              ></v-text-field>
-              <v-divider class="mx-4" inset vertical></v-divider>
+              <v-container>
+                <v-row>
+                  <v-col cols="3">
+                    <v-toolbar-title> 목록 </v-toolbar-title>
+                  </v-col>
+                  <v-col>
+                    <v-text-field
+                      v-model="search"
+                      append-icon="mdi-magnify"
+                      label="Search"
+                      single-line
+                      hide-details
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+              <v-spacer></v-spacer>
+              <!-- <v-divider class="mx-4" inset vertical></v-divider> -->
+              <!-- <v-divider class="mx-4" inset vertical></v-divider> -->
               <v-spacer></v-spacer>
               <v-dialog persistent v-model="dialog" max-width="500px">
                 <template v-slot:activator="{ on, attrs }">
@@ -32,7 +41,7 @@
                     v-bind="attrs"
                     v-on="on"
                   >
-                    Add a book
+                    추가하기
                   </v-btn>
                 </template>
                 <v-card>
@@ -68,9 +77,11 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="close">
-                      아니오
+                      취소
                     </v-btn>
-                    <v-btn color="blue darken-1" text @click="save"> 네 </v-btn>
+                    <v-btn color="blue darken-1" text @click="save">
+                      저장
+                    </v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -100,8 +111,11 @@
             <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
           </template>
           <template v-slot:no-data>
-            <v-progress-linear indeterminate color="cyan"></v-progress-linear
-          ></template>
+            <div v-if="dataLength === null">
+              <v-progress-linear indeterminate color="cyan"></v-progress-linear>
+            </div>
+            <div v-else>없음</div>
+          </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -120,6 +134,7 @@ export default {
     sendAuthor: "",
     sendTitle: "",
     search: "",
+    dataLength: null,
     headers: [
       {
         text: "title",
@@ -189,14 +204,20 @@ export default {
     },
 
     initialize() {
-      this.axios.get(`${api.url}/books`).then((res) => {
-        this.data = res.data;
-      });
+      this.axios
+        .get(`${api.url}/books`)
+        .then((res) => {
+          this.data = res.data;
+          this.dataLength = res.data.length;
+        })
+        .catch((err) => {
+          alert("조회 실패");
+          console.log(err);
+        });
     },
 
     editItem(item) {
       this.editedIndex = this.data.indexOf(item);
-      console.log(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
@@ -204,7 +225,6 @@ export default {
     deleteItem(item) {
       this.editedIndex = this.data.indexOf(item);
       this.editedItem = Object.assign({}, item);
-      console.log("deleteItem");
       this.dialogDelete = true;
     },
 
@@ -220,7 +240,7 @@ export default {
         })
         .catch((res) => {
           console.log(res);
-          alert("새로고침 후 다시 시도해주세요.");
+          alert("삭제 실패");
         });
 
       this.closeDelete();
@@ -258,7 +278,7 @@ export default {
             this.initialize();
           })
           .catch((res) => {
-            alert("오류발생");
+            alert("수정 실패");
             console.log(res);
           });
       } else {
@@ -273,6 +293,7 @@ export default {
             this.initialize();
           })
           .catch((err) => {
+            alert("등록 실패");
             console.log(err);
           });
       }
@@ -285,5 +306,10 @@ export default {
 <style>
 tbody > tr {
   cursor: pointer;
+}
+
+.mdi-arrow-up {
+  width: 12px;
+  height: 0px;
 }
 </style>
