@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "kit-fleamarket"
+  },
+  "targets": {
+    "kit-fleamarket": {
+      "hosting": {
+        "admin": [
+          "flea-admin"
+        ]
+      }
+    }
+  }
+}
