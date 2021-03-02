@@ -183,12 +183,13 @@
                 <v-toolbar-title>예약자 명단</v-toolbar-title>
                 <v-divider class="mx-4" inset vertical></v-divider>
                 <v-toolbar-title>
-                  예약 현황 {{ totalUserNum }} / {{ curUserNum }}
+                  예약 현황 {{ curUserNum }} / {{ totalUserNum }}
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-toolbar-title>
-                  다음 새로고침 까지 ( {{ count }} )</v-toolbar-title
-                >
+                <v-btn color="primary" dark class="mb-2" @click="getUserList">
+                  새로고침
+                </v-btn>
+
                 <!-- 삭제 -->
                 <v-dialog
                   persistent
@@ -232,22 +233,25 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <v-snackbar class="snackbar" v-model="snackbar" :timeout="timeout" bottom>
+      {{ text }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          닫기
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
 <script>
+import api from "@/key";
 export default {
   data() {
     return {
-      count: 5,
-
-      //현재 페이지의 책 아이디값.(테스트용)
-      //bookId: "7wf7FXSyZh5CenW7ln9t",
-
       selectState: ["A", "B", "C"],
-
-      // 총 등록 책 수
-      bookNum: 0,
 
       //현재 예약자 수
       curUserNum: 0,
@@ -331,6 +335,11 @@ export default {
       //해당 사용자 아이디, 비밀번호
       delUserId: "",
       delUserPs: "",
+
+      //스낵바
+      snackbar: false,
+      text: "",
+      timeout: 1000,
     };
   },
 
@@ -358,19 +367,6 @@ export default {
     },
   },
 
-  mounted() {
-    setInterval(() => {
-      if (this.count === "완료") {
-        this.count = 6;
-      }
-      this.count--;
-      if (this.count === 0) {
-        this.count = "완료";
-        this.getUserList();
-      }
-    }, 1000);
-  },
-
   // api 연결
   //테이블 초기화.
   created() {
@@ -379,21 +375,25 @@ export default {
   },
 
   methods: {
+    //스낵바(알림)
+    snackbarControll(inputText) {
+      this.snackbar = true;
+      this.text = inputText;
+    },
+
     //재고 목록 조회
     //초기화 함수(재고, 예약)
     //현재 등록되어 있는 책의 수(totalUserNum), 책 정보를 가져와서 재고 테이블에 초기화.
     async getBookList() {
       //상위 컴포넌트로부터 props를 받던 get방식으로 받던 책의 id값을 받아와서 해당 api에 던져줘야 함.
       await this.axios
-        .get(
-          `https://us-central1-kit-fleamarket.cloudfunctions.net/books/${this.bookId}/stocks`
-        )
+        .get(`${api.url}/books/${this.bookId}/stocks`)
         .then((res) => {
           this.totalUserNum = res.data.length;
           this.books = res.data;
         })
         .catch((err) => {
-          console.log("재고 조회 실패");
+          this.snackbarControll("재고 목록 조회 실패");
           console.log(err);
         });
     },
@@ -403,15 +403,13 @@ export default {
     //현재 예약자 수(curUserNum), 예약자 총 명단을 가져와서 예약자 명단 테이블에 초기화.
     async getUserList() {
       await this.axios
-        .get(
-          `https://us-central1-kit-fleamarket.cloudfunctions.net/books/${this.bookId}/reservations`
-        )
+        .get(`${api.url}/books/${this.bookId}/reservations`)
         .then((res) => {
           this.curUserNum = res.data.length;
           this.users = res.data;
         })
         .catch((err) => {
-          console.log("예약목록 조회 실패");
+          this.snackbarControll("예약 목록 조회 실패");
           console.log(err);
         });
     },
@@ -435,11 +433,14 @@ export default {
     delUsers() {
       this.axios
         .delete(
-          `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/${this.bookId}/reservations/${this.delUserId}`
+          `${api.url}/admin/books/${this.bookId}/reservations/${this.delUserId}`
         )
-        .then()
+        .then(() => {
+          this.snackbarControll("예약을 삭제하였습니다.");
+          this.getUserList();
+        })
         .catch((err) => {
-          console.log("예약 삭제 실패");
+          this.snackbarControll("예약 삭제 실패");
           console.log(err);
         });
     },
@@ -493,17 +494,15 @@ export default {
       };
 
       this.axios
-        .post(
-          `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/${this.bookId}/Stocks`,
-          body
-        )
+        .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
         .then(() => {
           //새로고침.
+          this.snackbarControll("재고를 추가하였습니다.");
           this.getBookList();
         })
 
         .catch((err) => {
-          console.log("재고 추가 실패");
+          this.snackbarControll("재고 추가 실패");
           console.log(err);
         });
     },
@@ -517,13 +516,13 @@ export default {
         state: item.state,
       };
       this.axios
-        .put(
-          `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/stocks/${item.id}`,
-          body
-        )
-        .then()
+        .put(`${api.url}/admin/stocks/${item.id}`, body)
+        .then(() => {
+          this.snackbar = true;
+          this.snackbarControll("재고를 수정하였습니다.", "success");
+        })
         .catch((err) => {
-          console.log("재고 수정 실패");
+          this.snackbarControll("재고 수정 실패");
           console.log(err);
         });
     },
@@ -532,11 +531,14 @@ export default {
     delBooks() {
       this.axios
         .delete(
-          `https://us-central1-kit-fleamarket.cloudfunctions.net/admin/books/${this.bookId}/stocks/${this.delBookId}`
+          `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`
         )
-        .then()
+        .then(() => {
+          this.getBookList();
+          this.snackbarControll("재고를 삭제하였습니다.");
+        })
         .catch((err) => {
-          console.log("재고 삭제 실패");
+          this.snackbarControll("재고 삭제 실패");
           console.log(err);
         });
     },
@@ -614,5 +616,9 @@ export default {
 .mdi-arrow-up {
   width: 12px;
   height: 0px;
+}
+
+.snackbar {
+  margin-bottom: 5vh;
 }
 </style>
