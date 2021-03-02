@@ -186,7 +186,7 @@
                   예약 현황 {{ curUserNum }} / {{ totalUserNum }}
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" dark class="mb-2" @click="getUserList">
+                <v-btn color="primary" dark class="mb-2" @click="userRefresh">
                   새로고침
                 </v-btn>
 
@@ -340,6 +340,8 @@ export default {
       snackbar: false,
       text: "",
       timeout: 1000,
+
+      isRefresh: false,
     };
   },
 
@@ -381,6 +383,11 @@ export default {
       this.text = inputText;
     },
 
+    userRefresh() {
+      this.isRefresh = true;
+      this.getUserList();
+    },
+
     //재고 목록 조회
     //초기화 함수(재고, 예약)
     //현재 등록되어 있는 책의 수(totalUserNum), 책 정보를 가져와서 재고 테이블에 초기화.
@@ -407,6 +414,10 @@ export default {
         .then((res) => {
           this.curUserNum = res.data.length;
           this.users = res.data;
+          if (this.isRefresh) {
+            this.snackbarControll("예약 목록 새로고침 성공");
+            this.isRefresh = !this.isRefresh;
+          }
         })
         .catch((err) => {
           this.snackbarControll("예약 목록 조회 실패");
