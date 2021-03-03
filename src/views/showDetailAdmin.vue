@@ -3,9 +3,14 @@
     <!-- 책이름, 저자,출판사, 검색 -->
     <v-row>
       <v-col cols="12">
+        <label>
+          <h1>책 정보</h1>
+        </label>
+      </v-col>
+      <v-col cols="12">
         <v-card class="cover">
           <v-card-title>
-            <v-col offset="1" cols="3"> 책이름 </v-col>
+            <v-col offset-sm="1" offset-md="4" cols="3"> 책이름 </v-col>
             <v-col>
               <h3>{{ this.$route.params.title }}</h3>
             </v-col>
@@ -14,7 +19,7 @@
           <v-divider></v-divider>
 
           <v-card-title>
-            <v-col offset="1" cols="3"> 저자 </v-col>
+            <v-col offset-sm="1" offset-md="4" cols="3"> 저자 </v-col>
             <v-col>
               <h3>{{ this.$route.params.author }}</h3>
             </v-col>
@@ -23,7 +28,87 @@
           <v-divider></v-divider>
 
           <v-card-title>
-            <v-col offset="1" cols="3"> 출판사 </v-col>
+            <v-col offset-sm="1" offset-md="4" cols="3"> 출판사 </v-col>
+            <v-col>
+              <h3>{{ this.$route.params.publisher }}</h3>
+            </v-col>
+          </v-card-title>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- 
+
+      현재 등록된 총 재고수 : totalUserNum
+      현재 총 예약자 수 : curUserNum
+
+      총 재고중 예약 가능한 재고 수 : totalUserNum - completeNum
+      총 재고중 판매가 완료된 재고 수 : completeNum
+
+      총 예약자 중 
+
+     -->
+
+    <v-row>
+      <!-- 재고 현황 -->
+      <v-col cols="12" md="6">
+        <label>
+          <h1>재고 현황</h1>
+        </label>
+        <v-card class="cover">
+          <v-card-title>
+            <v-col offset="1"> 총 재고 수 </v-col>
+            <v-col>
+              <h3>{{ this.totalUserNum }}</h3>
+            </v-col>
+          </v-card-title>
+
+          <v-divider></v-divider>
+
+          <v-card-title>
+            <v-col offset="1"> 판매 진행중 </v-col>
+            <v-col>
+              <h3>{{ this.totalUserNum - this.completeNum }}</h3>
+            </v-col>
+          </v-card-title>
+
+          <v-divider></v-divider>
+
+          <v-card-title>
+            <v-col offset="1"> 판매 완료 </v-col>
+            <v-col>
+              <h3>{{ this.completeNum }}</h3>
+            </v-col>
+          </v-card-title>
+        </v-card>
+      </v-col>
+
+      <!-- 예약 현황 -->
+      <v-col cols="12" md="6">
+        <label>
+          <h1>예약 현황</h1>
+        </label>
+        <v-card class="cover">
+          <v-card-title>
+            <v-col offset="1"> 총 예약자 수 </v-col>
+            <v-col>
+              <h3>{{ this.curUserNum }}</h3>
+            </v-col>
+          </v-card-title>
+
+          <v-divider></v-divider>
+
+          <v-card-title>
+            <v-col offset="1"> 예약 진행중 </v-col>
+            <v-col>
+              <h3>{{ this.$route.params.author }}</h3>
+            </v-col>
+          </v-card-title>
+
+          <v-divider></v-divider>
+
+          <v-card-title>
+            <v-col offset="1"> 거래 완료 </v-col>
             <v-col>
               <h3>{{ this.$route.params.publisher }}</h3>
             </v-col>
@@ -44,9 +129,14 @@
             class="elevation-1"
             mobile-breakpoint="0"
           >
+            <template v-slot:item.isSold="{ item }">
+              <v-chip :color="getColor(item.isSold)" dark>
+                {{ item.isSold }}
+              </v-chip>
+            </template>
             <template v-slot:top>
               <v-toolbar flat>
-                <v-toolbar-title>재고 목록</v-toolbar-title>
+                <h3>재고 목록</h3>
                 <v-divider class="mx-4" inset vertical></v-divider>
                 <v-spacer></v-spacer>
                 <v-dialog persistent v-model="dialogBook" max-width="500px">
@@ -103,16 +193,24 @@
                             >
                             </v-select>
                           </v-col>
+
+                          <v-col cols="12" sm="6" md="6">
+                            <v-select
+                              :items="selectIsSold"
+                              label="판매여부"
+                              v-model="editedBookItem.isSold"
+                            >
+                            </v-select>
+                          </v-col>
                         </v-row>
                       </v-container>
                     </v-card-text>
-
                     <v-card-actions>
                       <v-spacer></v-spacer>
                       <v-btn color="blue darken-1" text @click="closeBook">
                         취소
                       </v-btn>
-                      <v-btn color="blue darken-1" text @click="save">
+                      <v-btn color="blue darken-1" text @click="saveBook">
                         저장
                       </v-btn>
                     </v-card-actions>
@@ -186,7 +284,7 @@
           >
             <template v-slot:top>
               <v-toolbar flat>
-                <v-toolbar-title>예약자 명단</v-toolbar-title>
+                <h3>예약자 명단</h3>
                 <v-divider class="mx-4" inset vertical></v-divider>
                 <v-toolbar-title>
                   예약 현황 {{ curUserNum }} / {{ totalUserNum }}
@@ -195,6 +293,43 @@
                 <v-btn color="primary" dark class="mb-2" @click="userRefresh">
                   새로고침
                 </v-btn>
+
+                <v-dialog persistent v-model="dialogUser" max-width="500px">
+                  <!-- 예약 버튼 -->
+
+                  <!-- Dialog -->
+                  <v-card>
+                    <v-card-title>
+                      <span class="headline"> 수정하기 </span>
+                    </v-card-title>
+
+                    <!-- 신규 예약시 작성 요소 -->
+                    <!-- 날짜, 시간, 이름, 학번, 비밀번호 -->
+                    <v-card-text>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12">
+                            <v-select
+                              :items="selectUser"
+                              label="예약여부"
+                              v-model="editedUserItem.isSold"
+                            >
+                            </v-select>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="blue darken-1" text @click="closeUser">
+                        취소
+                      </v-btn>
+                      <v-btn color="blue darken-1" text @click="saveUser">
+                        저장
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
 
                 <!-- 삭제 -->
                 <v-dialog
@@ -229,9 +364,16 @@
                 </v-dialog>
               </v-toolbar>
             </template>
+
+            <!-- Actions -->
             <template v-slot:item.actions="{ item }">
+              <v-icon small class="mr-2" @click="editUserItem(item)">
+                mdi-pencil
+              </v-icon>
               <v-icon small @click="deleteUserItem(item)"> mdi-delete </v-icon>
             </template>
+
+            <!-- 로딩 / 데이터 없는 경우 -->
             <template v-slot:no-data>
               <div v-if="curUserNum === null">
                 <v-progress-linear
@@ -246,6 +388,7 @@
       </v-col>
     </v-row>
 
+    <!-- 스낵바 -->
     <v-snackbar class="snackbar" v-model="snackbar" :timeout="timeout" bottom>
       {{ text }}
 
@@ -265,10 +408,30 @@ export default {
     return {
       selectState: ["A", "B", "C"],
 
+      selectIsSold: ["판매중", "판매완료"],
+
+      selectUser: ["예약중", "거래완료"],
+
+      /*
+      
+      현재 등록된 총 재고수 : totalUserNum
+      현재 총 예약자 수 : curUserNum
+
+      총 재고중 예약 가능한 재고 수 : totalUserNum - completeNum
+      총 재고중 판매가 완료된 재고 수 : completeNum
+
+      총 예약자 중 
+
+      */
+
       //현재 예약자 수
       curUserNum: null,
-      //총 예약 가능한 수
+
+      //총 예약 가능한 수(총 재고 수)
       totalUserNum: null,
+
+      //판매 완료된 재고 수
+      completeNum: 0,
 
       bookHeaders: [
         {
@@ -280,6 +443,7 @@ export default {
         { text: "학번", value: "studentId" },
         { text: "판매가격(원)", value: "price" },
         { text: "책상태", value: "state" },
+        { text: "판매여부", value: "isSold" },
         { text: "Actions", value: "actions", sortable: false },
       ],
 
@@ -292,7 +456,8 @@ export default {
         },
         { text: "학번", value: "studentId" },
         { text: "시간", value: "time" },
-        { text: "삭제", value: "actions", sortable: false },
+        { text: "예약여부", value: "isSold" },
+        { text: "Actions", value: "actions", sortable: false },
       ],
 
       //   책목록 배열
@@ -316,12 +481,14 @@ export default {
         studentId: "",
         price: "",
         state: "",
+        isSold: "",
       },
       defaultBookItem: {
         name: "",
         studentId: "",
         price: "",
         state: "",
+        isSold: "",
       },
 
       //사용자
@@ -389,6 +556,13 @@ export default {
   },
 
   methods: {
+    // 판매여부
+    getColor(item) {
+      if (item === "판매완료") {
+        return "red";
+      } else return "green";
+    },
+
     //스낵바(알림)
     snackbarControll(inputText) {
       this.snackbar = true;
@@ -408,6 +582,17 @@ export default {
       await this.axios
         .get(`${api.url}/books/${this.bookId}/stocks`)
         .then((res) => {
+          console.log(res.data);
+          this.completeNum = 0;
+          this.books = res.data.map((value) => {
+            if (!value.isSold) {
+              value.isSold = "판매중";
+            } else {
+              value.isSold = "판매완료";
+              this.completeNum++;
+            }
+            console.log(value.isSold);
+          });
           this.totalUserNum = res.data.length;
           this.books = res.data;
         })
@@ -424,6 +609,8 @@ export default {
       await this.axios
         .get(`${api.url}/books/${this.bookId}/reservations`)
         .then((res) => {
+          console.log("에약자 정보");
+          console.log(res);
           this.curUserNum = res.data.length;
           this.users = res.data;
           if (this.isRefresh) {
@@ -452,7 +639,7 @@ export default {
     //사용자 에약 목록관련
     //기존 예약 조회, 삭제기능.
 
-    // 예약 삭제 통신 함수
+    // 예약 통신 함수
     delUsers() {
       this.axios
         .delete(
@@ -501,6 +688,22 @@ export default {
       });
     },
 
+    // 예약 수정
+    editUserItem(item) {
+      this.editedUserIndex = this.users.indexOf(item);
+      this.editedUserItem = Object.assign({}, item);
+      this.dialogUser = true;
+    },
+
+    saveUser() {
+      //수정하는경우
+      Object.assign(this.users[this.editedUserIndex], this.editedUserItem);
+
+      this.modiUsersList(this.users[this.editedUserIndex]);
+
+      this.closeUser();
+    },
+
     //-----예약 기능함수 끝-----
 
     //책 목록관련
@@ -514,12 +717,20 @@ export default {
         studentId: item.studentId,
         price: item.price,
         state: item.state,
+        isSold: item.isSold,
       };
+
+      if (body.isSold === "판매완료") {
+        body.isSold = true;
+      } else {
+        body.isSold = false;
+      }
 
       this.axios
         .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
         .then(() => {
           //새로고침.
+          console.log(body);
           this.snackbarControll("재고를 추가하였습니다.");
           this.getBookList();
         })
@@ -537,12 +748,21 @@ export default {
         studentId: item.studentId,
         price: item.price,
         state: item.state,
+        isSold: item.isSold,
       };
+
+      if (body.isSold === "판매완료") {
+        body.isSold = true;
+      } else {
+        body.isSold = false;
+      }
       this.axios
         .put(`${api.url}/admin/stocks/${item.id}`, body)
-        .then(() => {
+        .then((res) => {
           this.snackbar = true;
-          this.snackbarControll("재고를 수정하였습니다.", "success");
+          this.getBookList();
+          this.snackbarControll("재고를 수정하였습니다.");
+          console.log(res);
         })
         .catch((err) => {
           this.snackbarControll("재고 수정 실패");
@@ -614,7 +834,7 @@ export default {
     },
 
     //신규 데이터 생성, 기존 데이터 변경 시 save 를 누르면 수행
-    save() {
+    saveBook() {
       //수정하는경우
       if (this.editedBookIndex > -1) {
         Object.assign(this.books[this.editedBookIndex], this.editedBookItem);
