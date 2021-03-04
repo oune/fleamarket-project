@@ -39,10 +39,10 @@
 
     <!-- 
 
-      현재 등록된 총 재고수 : totalUserNum
+      현재 등록된 총 재고수 : totalBookNum
       현재 총 예약자 수 : curUserNum
 
-      총 재고중 예약 가능한 재고 수 : totalUserNum - completeNum
+      총 재고중 예약 가능한 재고 수 : totalBookNum - completeNum
       총 재고중 판매가 완료된 재고 수 : completeNum
 
       총 예약자 중 
@@ -59,7 +59,7 @@
           <v-card-title>
             <v-col offset="1"> 총 재고 수 </v-col>
             <v-col>
-              <h3>{{ this.totalUserNum }}</h3>
+              <h3>{{ this.totalBookNum }}</h3>
             </v-col>
           </v-card-title>
 
@@ -68,7 +68,7 @@
           <v-card-title>
             <v-col offset="1"> 판매 진행중 </v-col>
             <v-col>
-              <h3>{{ this.totalUserNum - this.completeNum }}</h3>
+              <h3>{{ this.curBookNum }}</h3>
             </v-col>
           </v-card-title>
 
@@ -77,7 +77,7 @@
           <v-card-title>
             <v-col offset="1"> 판매 완료 </v-col>
             <v-col>
-              <h3>{{ this.completeNum }}</h3>
+              <h3>{{ this.totalBookNum - this.curBookNum }}</h3>
             </v-col>
           </v-card-title>
         </v-card>
@@ -92,7 +92,7 @@
           <v-card-title>
             <v-col offset="1"> 총 예약자 수 </v-col>
             <v-col>
-              <h3>{{ this.curUserNum }}</h3>
+              <h3>{{ this.totalUserNum }}</h3>
             </v-col>
           </v-card-title>
 
@@ -101,7 +101,7 @@
           <v-card-title>
             <v-col offset="1"> 예약 진행중 </v-col>
             <v-col>
-              <h3>{{ this.$route.params.author }}</h3>
+              <h3>{{ this.curUserNum }}</h3>
             </v-col>
           </v-card-title>
 
@@ -110,7 +110,7 @@
           <v-card-title>
             <v-col offset="1"> 거래 완료 </v-col>
             <v-col>
-              <h3>{{ this.$route.params.publisher }}</h3>
+              <h3>{{ this.totalUserNum - this.curUserNum }}</h3>
             </v-col>
           </v-card-title>
         </v-card>
@@ -196,6 +196,17 @@
 
                           <v-col cols="12" sm="6" md="6">
                             <v-select
+                              v-if="formTitle === '추가'"
+                              disabled
+                              :items="selectIsSold"
+                              item-value="판매 중"
+                              item
+                              label="판매 중"
+                              v-model="editedBookItem.isSold"
+                            >
+                            </v-select>
+                            <v-select
+                              v-else
                               :items="selectIsSold"
                               label="판매여부"
                               v-model="editedBookItem.isSold"
@@ -257,7 +268,7 @@
               <v-icon small @click="deleteBookItem(item)"> mdi-delete </v-icon>
             </template>
             <template v-slot:no-data>
-              <div v-if="totalUserNum === null">
+              <div v-if="totalBookNum === null">
                 <v-progress-linear
                   indeterminate
                   color="cyan"
@@ -282,12 +293,17 @@
             class="elevation-1"
             mobile-breakpoint="0"
           >
+            <template v-slot:item.isSold="{ item }">
+              <v-chip :color="getColor(item.isSold)" dark>
+                {{ item.isSold }}
+              </v-chip>
+            </template>
             <template v-slot:top>
               <v-toolbar flat>
                 <h3>예약자 명단</h3>
                 <v-divider class="mx-4" inset vertical></v-divider>
                 <v-toolbar-title>
-                  예약 현황 {{ curUserNum }} / {{ totalUserNum }}
+                  예약 현황 {{ curUserNum }} / {{ curBookNum }}
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-btn color="primary" dark class="mb-2" @click="userRefresh">
@@ -344,9 +360,10 @@
                         <v-col cols="6"></v-col>
                       </v-row>
                     </v-container>
-                    <v-card-title class="headline"
-                      >예약을 삭제하시겠습니까?</v-card-title
-                    >
+                    <v-card-title class="headline">
+                      <v-icon large color="red">mdi-cancel</v-icon>
+                      (주의) 예약을 삭제하시겠습니까?
+                    </v-card-title>
                     <v-card-actions>
                       <v-spacer></v-spacer>
                       <v-btn color="blue darken-1" text @click="closeUserDelete"
@@ -375,7 +392,7 @@
 
             <!-- 로딩 / 데이터 없는 경우 -->
             <template v-slot:no-data>
-              <div v-if="curUserNum === null">
+              <div v-if="totalUserNum === null">
                 <v-progress-linear
                   indeterminate
                   color="cyan"
@@ -408,14 +425,14 @@ export default {
     return {
       selectState: ["A", "B", "C"],
 
-      selectIsSold: ["판매중", "판매완료"],
+      selectIsSold: ["판매 중", "판매 완료"],
 
-      selectUser: ["예약중", "거래완료"],
+      selectUser: ["거래 완료", "예약 진행중"],
 
       /*
       
       현재 등록된 총 재고수 : totalUserNum
-      현재 총 예약자 수 : curUserNum
+      현재 총 예약자 수 : totalUserNum
 
       총 재고중 예약 가능한 재고 수 : totalUserNum - completeNum
       총 재고중 판매가 완료된 재고 수 : completeNum
@@ -424,14 +441,17 @@ export default {
 
       */
 
-      //현재 예약자 수
-      curUserNum: null,
-
-      //총 예약 가능한 수(총 재고 수)
+      //총 예약자 수
       totalUserNum: null,
 
-      //판매 완료된 재고 수
-      completeNum: 0,
+      //예약 진행중인 수
+      curUserNum: 0,
+
+      //총 재고 수
+      totalBookNum: null,
+
+      //판매 중인 재고 수
+      curBookNum: 0,
 
       bookHeaders: [
         {
@@ -558,7 +578,7 @@ export default {
   methods: {
     // 판매여부
     getColor(item) {
-      if (item === "판매완료") {
+      if (item === "판매 완료" || item === "거래 완료") {
         return "red";
       } else return "green";
     },
@@ -582,18 +602,16 @@ export default {
       await this.axios
         .get(`${api.url}/books/${this.bookId}/stocks`)
         .then((res) => {
-          console.log(res.data);
-          this.completeNum = 0;
-          this.books = res.data.map((value) => {
+          this.curBookNum = 0;
+          res.data.map((value) => {
             if (!value.isSold) {
-              value.isSold = "판매중";
+              value.isSold = "판매 중";
+              this.curBookNum++;
             } else {
-              value.isSold = "판매완료";
-              this.completeNum++;
+              value.isSold = "판매 완료";
             }
-            console.log(value.isSold);
           });
-          this.totalUserNum = res.data.length;
+          this.totalBookNum = res.data.length;
           this.books = res.data;
         })
         .catch((err) => {
@@ -609,9 +627,16 @@ export default {
       await this.axios
         .get(`${api.url}/books/${this.bookId}/reservations`)
         .then((res) => {
-          console.log("에약자 정보");
-          console.log(res);
-          this.curUserNum = res.data.length;
+          this.totalUserNum = res.data.length;
+          this.curUserNum = 0;
+          res.data.map((value) => {
+            if (!value.isSold) {
+              value.isSold = "예약 진행중";
+              this.curUserNum++;
+            } else {
+              value.isSold = "거래 완료";
+            }
+          });
           this.users = res.data;
           if (this.isRefresh) {
             this.snackbarControll("예약 목록 새로고침 완료");
@@ -704,6 +729,29 @@ export default {
       this.closeUser();
     },
 
+    modiUsersList(item) {
+      let body = {
+        isSold: item.isSold,
+      };
+      if (body.isSold === "거래 완료") {
+        body.isSold = true;
+      } else {
+        body.isSold = false;
+      }
+
+      this.axios
+        .put(`${api.url}/admin/reservations/${item.id}`, body)
+        .then((res) => {
+          console.log(res);
+          this.getUserList();
+          this.snackbarControll("예약을 수정하였습니다.");
+        })
+        .catch((err) => {
+          this.snackbarControll("예약 수정 실패");
+          console.log(err);
+        });
+    },
+
     //-----예약 기능함수 끝-----
 
     //책 목록관련
@@ -720,7 +768,7 @@ export default {
         isSold: item.isSold,
       };
 
-      if (body.isSold === "판매완료") {
+      if (body.isSold === "판매 완료") {
         body.isSold = true;
       } else {
         body.isSold = false;
@@ -730,7 +778,7 @@ export default {
         .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
         .then(() => {
           //새로고침.
-          console.log(body);
+          // console.log(body);
           this.snackbarControll("재고를 추가하였습니다.");
           this.getBookList();
         })
@@ -751,18 +799,17 @@ export default {
         isSold: item.isSold,
       };
 
-      if (body.isSold === "판매완료") {
+      if (body.isSold === "판매 완료") {
         body.isSold = true;
       } else {
         body.isSold = false;
       }
       this.axios
         .put(`${api.url}/admin/stocks/${item.id}`, body)
-        .then((res) => {
-          this.snackbar = true;
+        .then(() => {
+          // this.snackbar = true;
           this.getBookList();
           this.snackbarControll("재고를 수정하였습니다.");
-          console.log(res);
         })
         .catch((err) => {
           this.snackbarControll("재고 수정 실패");
