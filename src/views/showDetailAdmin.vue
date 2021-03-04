@@ -741,8 +741,7 @@ export default {
 
       this.axios
         .put(`${api.url}/admin/reservations/${item.id}`, body)
-        .then((res) => {
-          console.log(res);
+        .then(() => {
           this.getUserList();
           this.snackbarControll("예약을 수정하였습니다.");
         })
