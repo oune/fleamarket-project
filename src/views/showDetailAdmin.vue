@@ -2,11 +2,28 @@
   <v-container>
     <!-- 책이름, 저자,출판사, 검색 -->
     <v-row>
-      <v-col cols="12">
+      <!-- <v-col>
         <label>
-          <h1>책 정보</h1>
+          야8
+          <v-spacer></v-spacer>
+          <v-btn> 씨8 </v-btn>
+        </label>
+      </v-col> -->
+      <v-col>
+        <label class="headCover">
+          <h1 class="head1">책 정보</h1>
+          <v-btn large class="btnHome" color="primary" dark @click="moveHome">
+            <v-icon medium color="white">mdi-home</v-icon> Home
+          </v-btn>
         </label>
       </v-col>
+      <!-- <v-spacer></v-spacer>
+      <v-col>
+        <h1>
+          <v-icon x-large color="blue" class="btnHome">mdi-home</v-icon>
+          Home
+        </h1>
+      </v-col> -->
       <v-col cols="12">
         <v-card class="cover">
           <v-card-title>
@@ -99,6 +116,22 @@
           <v-divider></v-divider>
 
           <v-card-title>
+            <v-col offset="1"> 취소한 예약자 수 </v-col>
+            <v-col>
+              <h3>{{ this.cancelUserNum }}</h3>
+            </v-col>
+          </v-card-title>
+          <v-divider></v-divider>
+          <v-card-title>
+            <v-col offset="1"> 유효한 예약자 수 </v-col>
+            <v-col>
+              <h3>{{ this.UserNum }}</h3>
+            </v-col>
+          </v-card-title>
+
+          <v-divider></v-divider>
+
+          <v-card-title>
             <v-col offset="1"> 예약 진행중 </v-col>
             <v-col>
               <h3>{{ this.curUserNum }}</h3>
@@ -110,7 +143,7 @@
           <v-card-title>
             <v-col offset="1"> 거래 완료 </v-col>
             <v-col>
-              <h3>{{ this.totalUserNum - this.curUserNum }}</h3>
+              <h3>{{ this.UserNum - this.curUserNum }}</h3>
             </v-col>
           </v-card-title>
         </v-card>
@@ -120,13 +153,12 @@
     <!-- 등록되어 있는 책 목록 -->
     <v-row>
       <v-col>
-        <v-card>
-          <!-- 예약자 명단 테이블 -->
+        <v-card class="bookTableCover">
           <v-data-table
             :headers="bookHeaders"
             :items="books"
             sort-by="name"
-            class="elevation-1"
+            class="elevation-1 bookTable"
             mobile-breakpoint="0"
           >
             <template v-slot:item.isSold="{ item }">
@@ -284,13 +316,13 @@
     <!-- 예약자 명단 -->
     <v-row>
       <v-col>
-        <v-card>
+        <v-card class="userTableCover">
           <!-- 예약자 명단 테이블 -->
           <v-data-table
             :headers="userHeaders"
             :items="users"
-            sort-by="name"
-            class="elevation-1"
+            sort-by="isCancel"
+            class="elevation-1 userTable"
             mobile-breakpoint="0"
           >
             <template v-slot:item.isSold="{ item }">
@@ -298,6 +330,13 @@
                 {{ item.isSold }}
               </v-chip>
             </template>
+
+            <template v-slot:item.isCancel="{ item }">
+              <v-chip :color="getColor(item.isCancel)" dark>
+                {{ item.isCancel }}
+              </v-chip>
+            </template>
+
             <template v-slot:top>
               <v-toolbar flat>
                 <h3>예약자 명단</h3>
@@ -310,13 +349,12 @@
                   새로고침
                 </v-btn>
 
-                <v-dialog persistent v-model="dialogUser" max-width="500px">
-                  <!-- 예약 버튼 -->
-
+                <!-- 예약 정보 수정 -->
+                <v-dialog persistent v-model="dialogModiUser" max-width="500px">
                   <!-- Dialog -->
                   <v-card>
                     <v-card-title>
-                      <span class="headline"> 수정하기 </span>
+                      <span class="headline"> 에약 여부 수정하기 </span>
                     </v-card-title>
 
                     <!-- 신규 예약시 작성 요소 -->
@@ -340,42 +378,35 @@
                       <v-btn color="blue darken-1" text @click="closeUser">
                         취소
                       </v-btn>
-                      <v-btn color="blue darken-1" text @click="saveUser">
+                      <v-btn color="blue darken-1" text @click="modiUser">
                         저장
                       </v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
 
-                <!-- 삭제 -->
+                <!-- 취소 -->
                 <v-dialog
                   persistent
-                  v-model="dialogUserDelete"
+                  v-model="dialogCancelUser"
                   max-width="500px"
                 >
+                  <!-- Dialog -->
                   <v-card>
-                    <v-container>
-                      <v-row>
-                        <v-col cols="6"></v-col>
-                        <v-col cols="6"></v-col>
-                      </v-row>
-                    </v-container>
-                    <v-card-title class="headline">
-                      <v-icon large color="red">mdi-cancel</v-icon>
-                      (주의) 예약을 삭제하시겠습니까?
+                    <v-card-title>
+                      <span class="headline"
+                        ><v-icon color="red">mdi-cancel</v-icon>(주의) 에약 취소
+                        하기
+                      </span>
                     </v-card-title>
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="closeUserDelete"
-                        >아니오</v-btn
-                      >
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="deleteUserItemConfirm"
-                        >네</v-btn
-                      >
-                      <v-spacer></v-spacer>
+                      <v-btn color="blue darken-1" text @click="closeUser">
+                        취소
+                      </v-btn>
+                      <v-btn color="blue darken-1" text @click="cancelUser">
+                        변경
+                      </v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
@@ -384,10 +415,10 @@
 
             <!-- Actions -->
             <template v-slot:item.actions="{ item }">
-              <v-icon small class="mr-2" @click="editUserItem(item)">
+              <v-icon small class="mr-4" @click="editUserItem(item)">
                 mdi-pencil
               </v-icon>
-              <v-icon small @click="deleteUserItem(item)"> mdi-delete </v-icon>
+              <v-icon small @click="cancelUserItem(item)"> mdi-cancel </v-icon>
             </template>
 
             <!-- 로딩 / 데이터 없는 경우 -->
@@ -429,23 +460,17 @@ export default {
 
       selectUser: ["거래 완료", "예약 진행중"],
 
-      /*
-      
-      현재 등록된 총 재고수 : totalUserNum
-      현재 총 예약자 수 : totalUserNum
-
-      총 재고중 예약 가능한 재고 수 : totalUserNum - completeNum
-      총 재고중 판매가 완료된 재고 수 : completeNum
-
-      총 예약자 중 
-
-      */
-
       //총 예약자 수
       totalUserNum: null,
 
       //예약 진행중인 수
       curUserNum: 0,
+
+      //거래 완료 예약자 수
+      finishUserNum: 0,
+
+      //취소된 예약자 수
+      cancelUserNum: 0,
 
       //총 재고 수
       totalBookNum: null,
@@ -469,15 +494,20 @@ export default {
 
       userHeaders: [
         {
-          text: "이름",
+          text: "예약 취소 여부",
           align: "start",
           sortable: true,
+          value: "isCancel",
+        },
+
+        {
+          text: "이름",
           value: "name",
         },
         { text: "학번", value: "studentId" },
         { text: "시간", value: "time" },
         { text: "예약여부", value: "isSold" },
-        { text: "Actions", value: "actions", sortable: false },
+        { text: "정보 / 취소", value: "actions", sortable: false },
       ],
 
       //   책목록 배열
@@ -491,7 +521,9 @@ export default {
       dialogBook: false,
       dialogBookDelete: false,
 
-      dialogUser: false,
+      dialogModiUser: false,
+      dialogCancelUser: false,
+
       dialogUserDelete: false,
 
       //책
@@ -548,6 +580,10 @@ export default {
     formTitle() {
       return this.editedBookIndex === -1 ? "추가" : "수정";
     },
+
+    UserNum() {
+      return this.totalUserNum - this.cancelUserNum;
+    },
   },
 
   watch: {
@@ -560,11 +596,12 @@ export default {
     },
 
     // 예약
-    dialogUser(val) {
+    dialogModiUser(val) {
       val || this.closeUser();
     },
-    dialogUserDelete(val) {
-      val || this.closeUserDelete();
+
+    dialogCancelUser(val) {
+      val || this.closeUser();
     },
   },
 
@@ -576,9 +613,16 @@ export default {
   },
 
   methods: {
+    //홈화면 이동
+    moveHome() {
+      this.$router.push({
+        name: "Manager",
+      });
+    },
+
     // 판매여부
     getColor(item) {
-      if (item === "판매 완료" || item === "거래 완료") {
+      if (item === "판매 완료" || item === "거래 완료" || item === "취소") {
         return "red";
       } else return "green";
     },
@@ -629,12 +673,34 @@ export default {
         .then((res) => {
           this.totalUserNum = res.data.length;
           this.curUserNum = 0;
+          this.cancelUserNum = 0;
+          this.finishUserNum = 0;
+
+          // 예약관리
           res.data.map((value) => {
-            if (!value.isSold) {
-              value.isSold = "예약 진행중";
-              this.curUserNum++;
-            } else {
-              value.isSold = "거래 완료";
+            // 유효한 상태
+            if (value.isCancel === false) {
+              value.isCancel = "유효";
+              // 예약 진행중
+              if (value.isSold === false) {
+                value.isSold = "예약 진행 중";
+                this.curUserNum++;
+              }
+              // 거래 완료
+              else {
+                value.isSold = "거래 완료";
+                this.finishUserNum++;
+              }
+            }
+            // 취소한 상태
+            else {
+              value.isCancel = "취소";
+              this.cancelUserNum++;
+              if (value.isSold === false) {
+                value.isSold = "예약 진행 중";
+              } else {
+                value.isSold = "거래 완료";
+              }
             }
           });
           this.users = res.data;
@@ -665,48 +731,11 @@ export default {
     //기존 예약 조회, 삭제기능.
 
     // 예약 통신 함수
-    delUsers() {
-      this.axios
-        .delete(
-          `${api.url}/admin/books/${this.bookId}/reservations/${this.delUserId}`
-        )
-        .then(() => {
-          this.snackbarControll("예약을 삭제하였습니다.");
-          this.getUserList();
-        })
-        .catch((err) => {
-          this.snackbarControll("예약 삭제 실패");
-          console.log(err);
-        });
-    },
 
-    deleteUserItem(item) {
-      this.delUserId = item.id;
-      this.delUserPs = item.password;
-      this.editedUserIndex = this.users.indexOf(item);
-      this.editedUserItem = Object.assign({}, item);
-      this.dialogUserDelete = true;
-    },
-
-    //삭제 확인을 누르면 수행
-    deleteUserItemConfirm() {
-      this.delUsers();
-      this.users.splice(this.editedUserIndex, 1);
-      this.closeUserDelete();
-    },
-
-    //dialog 닫히면 수행
+    // //dialog 닫히면 수행
     closeUser() {
-      this.dialogUser = false;
-      this.$nextTick(() => {
-        this.editedUserItem = Object.assign({}, this.defaultUserItem);
-        this.editedUserIndex = -1;
-      });
-    },
-
-    //삭제 확인을 누르면 deleteItemConfirm 이후 수행
-    closeUserDelete() {
-      this.dialogUserDelete = false;
+      this.dialogModiUser = false;
+      this.dialogCancelUser = false;
       this.$nextTick(() => {
         this.editedUserItem = Object.assign({}, this.defaultUserItem);
         this.editedUserIndex = -1;
@@ -717,11 +746,10 @@ export default {
     editUserItem(item) {
       this.editedUserIndex = this.users.indexOf(item);
       this.editedUserItem = Object.assign({}, item);
-      this.dialogUser = true;
+      this.dialogModiUser = true;
     },
 
-    saveUser() {
-      //수정하는경우
+    modiUser() {
       Object.assign(this.users[this.editedUserIndex], this.editedUserItem);
 
       this.modiUsersList(this.users[this.editedUserIndex]);
@@ -729,7 +757,15 @@ export default {
       this.closeUser();
     },
 
-    modiUsersList(item) {
+    cancelUser() {
+      Object.assign(this.users[this.editedUserIndex], this.editedUserItem);
+
+      this.cancelUsersList(this.users[this.editedUserIndex]);
+
+      this.closeUser();
+    },
+
+    async modiUsersList(item) {
       let body = {
         isSold: item.isSold,
       };
@@ -739,7 +775,7 @@ export default {
         body.isSold = false;
       }
 
-      this.axios
+      await this.axios
         .put(`${api.url}/admin/reservations/${item.id}`, body)
         .then(() => {
           this.getUserList();
@@ -749,6 +785,27 @@ export default {
           this.snackbarControll("예약 수정 실패");
           console.log(err);
         });
+    },
+
+    // 취소 여부 수정
+
+    cancelUserItem(item) {
+      this.editedUserIndex = this.users.indexOf(item);
+      this.editedUserItem = Object.assign({}, item);
+      this.dialogCancelUser = true;
+    },
+
+    async cancelUsersList(item) {
+      await this.axios
+        .delete(`${api.url}/admin/books/${this.bookId}/reservations/${item.id}`)
+        .then(() => {
+          this.snackbarControll("예약을 취소 하였습니다.");
+        })
+        .catch((err) => {
+          this.snackbarControll("예약 수정 실패");
+          console.log(err);
+        });
+      this.getUserList();
     },
 
     //-----예약 기능함수 끝-----
@@ -776,16 +833,14 @@ export default {
       this.axios
         .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
         .then(() => {
-          //새로고침.
-          // console.log(body);
           this.snackbarControll("재고를 추가하였습니다.");
-          this.getBookList();
         })
 
         .catch((err) => {
           this.snackbarControll("재고 추가 실패");
           console.log(err);
         });
+      this.getBookList();
     },
 
     //재고 수정
@@ -807,13 +862,13 @@ export default {
         .put(`${api.url}/admin/stocks/${item.id}`, body)
         .then(() => {
           // this.snackbar = true;
-          this.getBookList();
           this.snackbarControll("재고를 수정하였습니다.");
         })
         .catch((err) => {
           this.snackbarControll("재고 수정 실패");
           console.log(err);
         });
+      this.getBookList();
     },
 
     //재고 삭제
@@ -823,13 +878,13 @@ export default {
           `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`
         )
         .then(() => {
-          this.getBookList();
           this.snackbarControll("재고를 삭제하였습니다.");
         })
         .catch((err) => {
           this.snackbarControll("재고 삭제 실패");
           console.log(err);
         });
+      this.getBookList();
     },
 
     //-----통신 함수 끝-----
@@ -902,12 +957,30 @@ export default {
 </script>
 
 <style>
-.mdi-arrow-up {
-  width: 12px;
-  height: 0px;
-}
-
 .snackbar {
   margin-bottom: 5vh;
+}
+
+.bookTableCover,
+.userTableCover {
+  overflow-x: scroll;
+  white-space: nowrap;
+  min-width: 200px;
+}
+
+.bookTable,
+.userTable {
+  display: inline-block;
+  width: initial;
+  min-width: 100%;
+}
+
+.btnHome {
+  cursor: pointer;
+}
+
+.headCover {
+  display: flex;
+  justify-content: space-between;
 }
 </style>
