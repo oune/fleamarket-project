@@ -1,12 +1,12 @@
 <template>
   <v-container>
     <v-row>
-      <v-col>
+      <v-col class="bookTableCover">
         <v-data-table
           :headers="headers"
           :items="data"
           :search="search"
-          class="elevation-1"
+          class="elevation-1 bookTable"
           mobile-breakpoint="0"
           @click:row="link"
         >
@@ -306,10 +306,5 @@ export default {
 <style>
 tbody > tr {
   cursor: pointer;
-}
-
-.mdi-arrow-up {
-  width: 12px;
-  height: 0px;
 }
 </style>
