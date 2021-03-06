@@ -132,8 +132,9 @@
           <v-data-table
             :headers="bookHeaders"
             :items="books"
-            sort-by="name"
-            class="elevation-1 bookTable"
+            sort-by="isSold"
+            sort-desc
+            class="elevation-2 bookTable"
             mobile-breakpoint="0"
           >
             <template v-slot:item.isSold="{ item }">
@@ -759,6 +760,7 @@ export default {
         })
         .catch((err) => {
           this.snackbarControll("예약 수정 실패");
+          this.getUserList();
           console.log(err);
         });
     },
@@ -775,13 +777,14 @@ export default {
       await this.axios
         .delete(`${api.url}/admin/books/${this.bookId}/reservations/${item.id}`)
         .then(() => {
+          this.getUserList();
           this.snackbarControll("예약을 취소 하였습니다.");
         })
         .catch((err) => {
           this.snackbarControll("예약 수정 실패");
+          this.getUserList();
           console.log(err);
         });
-      this.getUserList();
     },
 
     //-----예약 기능함수 끝-----
@@ -809,14 +812,15 @@ export default {
       this.axios
         .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
         .then(() => {
+          this.getBookList();
           this.snackbarControll("재고를 추가하였습니다.");
         })
 
         .catch((err) => {
           this.snackbarControll("재고 추가 실패");
+          this.getBookList();
           console.log(err);
         });
-      this.getBookList();
     },
 
     //재고 수정
@@ -838,13 +842,14 @@ export default {
         .put(`${api.url}/admin/stocks/${item.id}`, body)
         .then(() => {
           // this.snackbar = true;
+          this.getBookList();
           this.snackbarControll("재고를 수정하였습니다.");
         })
         .catch((err) => {
           this.snackbarControll("재고 수정 실패");
+          this.getBookList();
           console.log(err);
         });
-      this.getBookList();
     },
 
     //재고 삭제
@@ -854,13 +859,14 @@ export default {
           `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`
         )
         .then(() => {
+          this.getBookList();
           this.snackbarControll("재고를 삭제하였습니다.");
         })
         .catch((err) => {
           this.snackbarControll("재고 삭제 실패");
+          this.getBookList();
           console.log(err);
         });
-      this.getBookList();
     },
 
     //-----통신 함수 끝-----
