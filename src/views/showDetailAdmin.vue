@@ -2,13 +2,6 @@
   <v-container>
     <!-- 책이름, 저자,출판사, 검색 -->
     <v-row>
-      <!-- <v-col>
-        <label>
-          야8
-          <v-spacer></v-spacer>
-          <v-btn> 씨8 </v-btn>
-        </label>
-      </v-col> -->
       <v-col>
         <label class="headCover">
           <h1 class="head1">책 정보</h1>
@@ -17,13 +10,7 @@
           </v-btn>
         </label>
       </v-col>
-      <!-- <v-spacer></v-spacer>
-      <v-col>
-        <h1>
-          <v-icon x-large color="blue" class="btnHome">mdi-home</v-icon>
-          Home
-        </h1>
-      </v-col> -->
+
       <v-col cols="12">
         <v-card class="cover">
           <v-card-title>
@@ -53,18 +40,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <!-- 
-
-      현재 등록된 총 재고수 : totalBookNum
-      현재 총 예약자 수 : curUserNum
-
-      총 재고중 예약 가능한 재고 수 : totalBookNum - completeNum
-      총 재고중 판매가 완료된 재고 수 : completeNum
-
-      총 예약자 중 
-
-     -->
 
     <v-row>
       <!-- 재고 현황 -->
@@ -620,7 +595,7 @@ export default {
       });
     },
 
-    // 판매여부
+    // 상태별 색 부여
     getColor(item) {
       if (item === "판매 완료" || item === "거래 완료" || item === "취소") {
         return "red";
@@ -633,6 +608,7 @@ export default {
       this.text = inputText;
     },
 
+    // 사용자 예약 새고로침
     userRefresh() {
       this.isRefresh = true;
       this.getUserList();
