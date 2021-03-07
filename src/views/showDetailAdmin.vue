@@ -2,13 +2,6 @@
   <v-container>
     <!-- 책이름, 저자,출판사, 검색 -->
     <v-row>
-      <!-- <v-col>
-        <label>
-          야8
-          <v-spacer></v-spacer>
-          <v-btn> 씨8 </v-btn>
-        </label>
-      </v-col> -->
       <v-col>
         <label class="headCover">
           <h1 class="head1">책 정보</h1>
@@ -17,13 +10,7 @@
           </v-btn>
         </label>
       </v-col>
-      <!-- <v-spacer></v-spacer>
-      <v-col>
-        <h1>
-          <v-icon x-large color="blue" class="btnHome">mdi-home</v-icon>
-          Home
-        </h1>
-      </v-col> -->
+
       <v-col cols="12">
         <v-card class="cover">
           <v-card-title>
@@ -53,18 +40,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <!-- 
-
-      현재 등록된 총 재고수 : totalBookNum
-      현재 총 예약자 수 : curUserNum
-
-      총 재고중 예약 가능한 재고 수 : totalBookNum - completeNum
-      총 재고중 판매가 완료된 재고 수 : completeNum
-
-      총 예약자 중 
-
-     -->
 
     <v-row>
       <!-- 재고 현황 -->
@@ -157,9 +132,11 @@
           <v-data-table
             :headers="bookHeaders"
             :items="books"
-            sort-by="name"
-            class="elevation-1 bookTable"
+            sort-by="isSold"
+            sort-desc
+            class="elevation-2 bookTable"
             mobile-breakpoint="0"
+            :search="searchBook"
           >
             <template v-slot:item.isSold="{ item }">
               <v-chip :color="getColor(item.isSold)" dark>
@@ -168,9 +145,24 @@
             </template>
             <template v-slot:top>
               <v-toolbar flat>
-                <h3>재고 목록</h3>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-spacer></v-spacer>
+                <v-container>
+                  <v-row>
+                    <v-col cols="5">
+                      <v-toolbar-title>재고 목록</v-toolbar-title>
+                    </v-col>
+                    <v-col>
+                      <v-text-field
+                        v-model="searchBook"
+                        append-icon="mdi-magnify"
+                        label="Search"
+                        single-line
+                        hide-details
+                      >
+                      </v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+
                 <v-dialog persistent v-model="dialogBook" max-width="500px">
                   <!-- 예약 버튼 -->
                   <template v-slot:activator="{ on, attrs }">
@@ -324,6 +316,7 @@
             sort-by="isCancel"
             class="elevation-1 userTable"
             mobile-breakpoint="0"
+            :search="searchUser"
           >
             <template v-slot:item.isSold="{ item }">
               <v-chip :color="getColor(item.isSold)" dark>
@@ -339,12 +332,24 @@
 
             <template v-slot:top>
               <v-toolbar flat>
-                <h3>예약자 명단</h3>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-toolbar-title>
-                  예약 현황 {{ curUserNum }} / {{ curBookNum }}
-                </v-toolbar-title>
-                <v-spacer></v-spacer>
+                <v-container>
+                  <v-row>
+                    <v-col cols="6">
+                      <v-toolbar-title>예약자 명단</v-toolbar-title>
+                    </v-col>
+                    <v-col>
+                      <v-text-field
+                        v-model="searchUser"
+                        append-icon="mdi-magnify"
+                        label="Search"
+                        single-line
+                        hide-details
+                      >
+                      </v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+
                 <v-btn color="primary" dark class="mb-2" @click="userRefresh">
                   새로고침
                 </v-btn>
@@ -459,6 +464,9 @@ export default {
       selectIsSold: ["판매 중", "판매 완료"],
 
       selectUser: ["거래 완료", "예약 진행중"],
+
+      searchBook: "",
+      searchUser: "",
 
       //총 예약자 수
       totalUserNum: null,
@@ -620,7 +628,7 @@ export default {
       });
     },
 
-    // 판매여부
+    // 상태별 색 부여
     getColor(item) {
       if (item === "판매 완료" || item === "거래 완료" || item === "취소") {
         return "red";
@@ -633,6 +641,7 @@ export default {
       this.text = inputText;
     },
 
+    // 사용자 예약 새고로침
     userRefresh() {
       this.isRefresh = true;
       this.getUserList();
@@ -683,7 +692,7 @@ export default {
               value.isCancel = "유효";
               // 예약 진행중
               if (value.isSold === false) {
-                value.isSold = "예약 진행 중";
+                value.isSold = "예약 진행중";
                 this.curUserNum++;
               }
               // 거래 완료
@@ -697,7 +706,7 @@ export default {
               value.isCancel = "취소";
               this.cancelUserNum++;
               if (value.isSold === false) {
-                value.isSold = "예약 진행 중";
+                value.isSold = "예약 진행중";
               } else {
                 value.isSold = "거래 완료";
               }
@@ -783,6 +792,7 @@ export default {
         })
         .catch((err) => {
           this.snackbarControll("예약 수정 실패");
+          this.getUserList();
           console.log(err);
         });
     },
@@ -799,13 +809,14 @@ export default {
       await this.axios
         .delete(`${api.url}/admin/books/${this.bookId}/reservations/${item.id}`)
         .then(() => {
+          this.getUserList();
           this.snackbarControll("예약을 취소 하였습니다.");
         })
         .catch((err) => {
           this.snackbarControll("예약 수정 실패");
+          this.getUserList();
           console.log(err);
         });
-      this.getUserList();
     },
 
     //-----예약 기능함수 끝-----
@@ -833,14 +844,15 @@ export default {
       this.axios
         .post(`${api.url}/admin/books/${this.bookId}/Stocks`, body)
         .then(() => {
+          this.getBookList();
           this.snackbarControll("재고를 추가하였습니다.");
         })
 
         .catch((err) => {
           this.snackbarControll("재고 추가 실패");
+          this.getBookList();
           console.log(err);
         });
-      this.getBookList();
     },
 
     //재고 수정
@@ -862,13 +874,14 @@ export default {
         .put(`${api.url}/admin/stocks/${item.id}`, body)
         .then(() => {
           // this.snackbar = true;
+          this.getBookList();
           this.snackbarControll("재고를 수정하였습니다.");
         })
         .catch((err) => {
           this.snackbarControll("재고 수정 실패");
+          this.getBookList();
           console.log(err);
         });
-      this.getBookList();
     },
 
     //재고 삭제
@@ -878,13 +891,14 @@ export default {
           `${api.url}/admin/books/${this.bookId}/stocks/${this.delBookId}`
         )
         .then(() => {
+          this.getBookList();
           this.snackbarControll("재고를 삭제하였습니다.");
         })
         .catch((err) => {
           this.snackbarControll("재고 삭제 실패");
+          this.getBookList();
           console.log(err);
         });
-      this.getBookList();
     },
 
     //-----통신 함수 끝-----
