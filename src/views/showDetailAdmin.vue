@@ -136,6 +136,7 @@
             sort-desc
             class="elevation-2 bookTable"
             mobile-breakpoint="0"
+            :search="searchBook"
           >
             <template v-slot:item.isSold="{ item }">
               <v-chip :color="getColor(item.isSold)" dark>
@@ -144,9 +145,24 @@
             </template>
             <template v-slot:top>
               <v-toolbar flat>
-                <h3>재고 목록</h3>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-spacer></v-spacer>
+                <v-container>
+                  <v-row>
+                    <v-col cols="5">
+                      <v-toolbar-title>재고 목록</v-toolbar-title>
+                    </v-col>
+                    <v-col>
+                      <v-text-field
+                        v-model="searchBook"
+                        append-icon="mdi-magnify"
+                        label="Search"
+                        single-line
+                        hide-details
+                      >
+                      </v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+
                 <v-dialog persistent v-model="dialogBook" max-width="500px">
                   <!-- 예약 버튼 -->
                   <template v-slot:activator="{ on, attrs }">
@@ -300,6 +316,7 @@
             sort-by="isCancel"
             class="elevation-1 userTable"
             mobile-breakpoint="0"
+            :search="searchUser"
           >
             <template v-slot:item.isSold="{ item }">
               <v-chip :color="getColor(item.isSold)" dark>
@@ -315,12 +332,24 @@
 
             <template v-slot:top>
               <v-toolbar flat>
-                <h3>예약자 명단</h3>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-toolbar-title>
-                  예약 현황 {{ curUserNum }} / {{ curBookNum }}
-                </v-toolbar-title>
-                <v-spacer></v-spacer>
+                <v-container>
+                  <v-row>
+                    <v-col cols="6">
+                      <v-toolbar-title>예약자 명단</v-toolbar-title>
+                    </v-col>
+                    <v-col>
+                      <v-text-field
+                        v-model="searchUser"
+                        append-icon="mdi-magnify"
+                        label="Search"
+                        single-line
+                        hide-details
+                      >
+                      </v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+
                 <v-btn color="primary" dark class="mb-2" @click="userRefresh">
                   새로고침
                 </v-btn>
@@ -435,6 +464,9 @@ export default {
       selectIsSold: ["판매 중", "판매 완료"],
 
       selectUser: ["거래 완료", "예약 진행중"],
+
+      searchBook: "",
+      searchUser: "",
 
       //총 예약자 수
       totalUserNum: null,
@@ -660,7 +692,7 @@ export default {
               value.isCancel = "유효";
               // 예약 진행중
               if (value.isSold === false) {
-                value.isSold = "예약 진행 중";
+                value.isSold = "예약 진행중";
                 this.curUserNum++;
               }
               // 거래 완료
@@ -674,7 +706,7 @@ export default {
               value.isCancel = "취소";
               this.cancelUserNum++;
               if (value.isSold === false) {
-                value.isSold = "예약 진행 중";
+                value.isSold = "예약 진행중";
               } else {
                 value.isSold = "거래 완료";
               }
