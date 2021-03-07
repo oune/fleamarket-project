@@ -513,6 +513,7 @@ export default {
           value: "name",
         },
         { text: "학번", value: "studentId" },
+        { text: "날짜", value: "date" },
         { text: "시간", value: "time" },
         { text: "예약여부", value: "isSold" },
         { text: "정보 / 취소", value: "actions", sortable: false },
